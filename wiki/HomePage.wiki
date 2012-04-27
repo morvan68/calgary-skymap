@@ -1,0 +1,29 @@
+#summary Calgary SkyMap home page
+#labels Featured
+#sidebar TableOfContents
+
+= Introduction =
+
+[http://www.ucalgary.ca University of Calgary]
+[http://aurora.phys.ucalgary.ca Auroral Imaging Group]
+http://svn.phys.ucalgary.ca/websvn/
+
+<wiki:toc max_depth="1"/>
+
+= Details =
+
+http://calgary-skymap.googlecode.com/svn/trunk/Makefile
+
+Add your content here.  Format your content with:
+  * Text in *bold* or _italic_
+  * Headings, paragraphs, and lists
+  * Automatic links to other wiki pages
+
+http://code.google.com/images/code_sm.png
+<g:plusone size="medium"></g:plusone>
+
+<wiki:comment>
+This text will be removed from the rendered page.
+</wiki:comment>
+
+<wiki:gadget url="http://mathml-gadget.googlecode.com/svn/trunk/mathml-gadget.xml" border="0" up_content="root3x + x^phi + x_1" height="15"/>
