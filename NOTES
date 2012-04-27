@@ -1,0 +1,46 @@
+bjackel@zippy ~
+$ cd ~
+
+bjackel@zippy ~
+$ pwd
+/home/bjackel
+
+bjackel@zippy ~
+$ ln -sf c:/Users/bjackel/Dropbox
+
+bjackel@zippy ~
+$ cd Dropbox/work/skymap/
+
+bjackel@zippy ~/Dropbox/work/skymap
+$ mkdir googlecode.svn
+
+bjackel@zippy ~/Dropbox/work/skymap
+$ cd googlecode.svn/
+
+bjackel@zippy ~/Dropbox/work/skymap/googlecode.svn
+$ svn checkout https://calgary-skymap.googlecode.com/svn/trunk/ calgary-skymap --username brian.jackel@gmail.com 
+
+Error validating server certificate for 'https://calgary-skymap.googlecode.com:443':
+ - The certificate is not issued by a trusted authority. Use the
+   fingerprint to validate the certificate manually!
+Certificate information:
+ - Hostname: *.googlecode.com
+ - Valid: from Wed, 11 Apr 2012 00:04:01 GMT until Thu, 11 Apr 2013 00:14:01 GMT
+ - Issuer: Google Inc, US
+ - Fingerprint: cb:f1:c8:ac:28:d5:61:b7:c1:9c:73:7e:3a:b6:bb:e2:e6:55:95:2a
+(R)eject, accept (t)emporarily or accept (p)ermanently? svn: E175002: Unable to connect to a repository at URL 'https://calgary-skymap.googlecode.com/svn/trunk'
+svn: E175002: OPTIONS of 'https://calgary-skymap.googlecode.com/svn/trunk': Server certificate verification failed: issuer is not trusted (https://calgary-skymap.googlecode.com)
+
+bjackel@zippy ~/Dropbox/work/skymap/googlecode.svn
+$ svn checkout https://calgary-skymap.googlecode.com/svn/trunk/ calgary-skymap --username brian.jackel@gmail.com
+Checked out revision 4.
+
+bjackel@zippy ~/Dropbox/work/skymap/googlecode.svn
+$ svn checkout https://calgary-skymap.googlecode.com/svn/ . --username brian.jackel@gmail.com
+A    wiki
+A    wiki/Main.wiki
+A    wiki/SkyMap.wiki
+A    trunk
+A    branches
+A    tags
+Checked out revision 4.
