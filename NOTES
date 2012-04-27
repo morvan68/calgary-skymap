@@ -44,3 +44,20 @@ A    trunk
 A    branches
 A    tags
 Checked out revision 4.
+
+How do I download my Subversion history?
+
+To download the history of your Google Code repository, use the svnsync tool that ships with Subversion 1.4 or later. Run 'svnsync help' to read more about this tool. Note that your local repository must have an executable 'pre-revprop-change' hook script which allows revprop changes (or at least those of the form 'svnsync*'.) Here's a sample transcript that demonstrates how you can pull history from your Google Code repository to a local repository:
+
+  $ svnadmin create localrepos
+  $ emacs localrepos/hooks/pre-revprop-change # make it 'exit 0'
+  $ chmod +x localrepos/hooks/pre-revprop-change
+  $ svnsync init --username USERNAME file:///path/to/localrepos https://myproject.googlecode.com/svn
+  Copied properties for revision 0.
+  $ svnsync sync --username USERNAME file:///path/to/localrepos
+  Committed revision 1.
+  Copied properties for revision 1.
+  Committed revision 2.
+  Copied properties for revision 2.
+  [...]
+After you've done this once, you can continue to run the last 'svnsync sync' command to periodically pull down the latest commits and keep your local mirror up-to-date.
