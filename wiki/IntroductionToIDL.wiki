@@ -1,0 +1,17 @@
+#summary A brief introduction to IDL.
+
+= Introduction =
+
+IDL used by many researchers in astronomy, space physics, and medical physics for data analysis and exploration.  The core language borrows heavily from Fortran and C, with a rich set of libraries providing added functionality.  Commands may be entered interactively in an Eclipse based GUI or combined into compiled functions or procedures.  Key language features include 
+ * dynamic data type conversion
+ * vector and array operations
+ * a widget toolkit
+ * an object oriented framework
+
+
+= Details =
+
+Add your content here.  Format your content with:
+  * Text in *bold* or _italic_
+  * Headings, paragraphs, and lists
+  * Automatic links to other wiki pages
