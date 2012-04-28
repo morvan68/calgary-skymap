@@ -33,6 +33,17 @@ http://www.asc-csa.gc.ca/eng/astronomy/auroramax/connect.asp
 [http://aurora.phys.ucalgary.ca Auroral Imaging Group]
 http://svn.phys.ucalgary.ca/websvn/
 
+= History =
+The earliest ancestor of this project was created at the University of Western Ontario to analyze data from intersecting beams of the EISCAT tristatic radar system.  It was subsequently extended to work with the MIDAS-C bistatic radar system.
+
+Calgary Wilbur, Norstarm CSA contract
+
+The THEMIS all-sky imager array provided the impetus for further development, including skymap "savefiles" used to generate CDF files.
+
+Then Rainbow.
+
+Now hi-res and MSP.
+
 = Details =
 
 http://calgary-skymap.googlecode.com/svn/trunk/Makefile
@@ -41,4 +52,3 @@ http://code.google.com/images/code_sm.png
 This text will be removed from the rendered page.
 </wiki:comment>
 <wiki:gadget url="http://mathml-gadget.googlecode.com/svn/trunk/mathml-gadget.xml" border="0" up_content="root3x + x^phi + x_1" height="15"/>
-
