@@ -1,33 +1,21 @@
-#summary Summer 2012
+#summary Summer 2012 plan
 #labels Featured
 
+<wiki:comment>
 #sidebar TableOfContents
-
-
-
-
-
 <wiki:toc max_depth="1"/>
-
-
+</wiki:comment>
 
 = Introduction =
+Starting in May 2012 we will have 16 weeks to focus on improvements to the SkyMap tools and application to scientific questions.  
 
-Geometric and photometric calibration of auroral all-sky imagers and meridian scanning photometers is essential
-for quantitative scientific applications.  However, dark-room characterization requires that instruments be 
-removed from remote field sites, shipped to a central facility, then returned to the field.  This process can be
-expensive, time-consuming, and carries an added risk of damage to sensitive optics or electronics.  As well, 
-shipping and re-deployment may cause significant changes to the instrument response, possibly invalidating the 
-painstaking exercise.  Even an aggressive annual schedule cannot track slow instrument drift, identify sub-optimal
-viewing conditions (e. ice on the dome), or determine the precise time of sudden changes in system response.
+Software related tasks include
+ * converting "old" IDL code into a unified object oriented framework while still maintaining computational efficiency
+ * improving coverage of [http://en.wikipedia.org/wiki/Unit_testing unit tests] to ensure valid results
+ * documenting concepts, algorithms, and examples
+ * developing a Python based toolkit
 
-Modern instrumentation is typically sensitive to intensities in the 1-100 Rayleighs range at time-scales 
-of a few seconds.  This is sufficient to detect "sub-visual" aurora and more than adequate for hundreds or
-thousands of stars.  It should be noted that auroral instruments
-
-
-Starting May 2012 we will have 16 weeks to develop an integrated toolkit for stellar calibration of auroral
-devices, and to use it for several important applications
+Scientific applications include
  * mapping very high resolution auroral all-sky images from the AuroraMax SLR
  * validating orientation of the new Norstar merdian scanning photometers
  * estimating cloud cover and viewing conditions
@@ -48,16 +36,26 @@ http://calgary-skymap.googlecode.com/svn/trunk/Makefile
 
 
 
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
+Brian Jackel will supervise John Anglo and Eric Davis, 
 
-http://code.google.com/images/code_sm.png
-<g:plusone size="medium"></g:plusone>
+ * overview of space physics and the aurora 
+ * introduction to computing tools
+   * IDL
+   * Subversion/Dropbox/Cygwin/LaTex
+== Monday April 30 ==
+Ensure that two Windows machines are functional, run updates, check NAS status.
 
-<wiki:comment>
-This text will be removed from the rendered page.
-</wiki:comment>
+== Tuesday May 01 ==
+Meet at my office (SB637) around 09:30am so that we can
+ * acquire keys for Division 10 (SB6??)
+ * get Eric Davis info (SIN etc.) to Jeannette (SB6??) for payroll
+ * create Windows accounts
+ * create Google accounts for access to [https://code.google.com/p/calgary-skymap calgary-skymap], add to [https://code.google.com/p/calgary-skymap/adminMembers project committers]
+ * set up Dropbox or Google Drive for backup
+ * initial Subversion pull
+start overview of space physics
+ * 
+start review of IDL
+ *
 
 <wiki:gadget url="http://mathml-gadget.googlecode.com/svn/trunk/mathml-gadget.xml" border="0" up_content="root3x + x^phi + x_1" height="15"/>
