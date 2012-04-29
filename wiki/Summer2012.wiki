@@ -7,13 +7,13 @@
 </wiki:comment>
 
 = Introduction =
-Starting in May 2012 we will have 16 weeks to focus on improvements to the SkyMap tools and application to scientific questions.  
+Starting in May 2012 we will have 16 weeks to focus on improvements to the SkyMap tools and apply them to scientific questions.  
 
 Software related tasks include
  * converting "old" IDL code into a unified object oriented framework while still maintaining computational efficiency
  * improving coverage of [http://en.wikipedia.org/wiki/Unit_testing unit tests] to ensure valid results
  * documenting concepts, algorithms, and examples
- * developing a Python based toolkit
+ * starting development of a Python based toolkit
 
 Scientific applications include
  * mapping very high resolution auroral all-sky images from the AuroraMax SLR
@@ -57,5 +57,58 @@ start overview of space physics
  * 
 start review of IDL
  *
+
+
+= Tasks =
+
+== Vector operations in IDL ==
+
+=== Single dot product ===
+{{{
+function dot0 vec1,vec2
+  result=0
+  for indx=0,2 do result= result + vec1[indx] * vec2[indx]
+  return,result
+end
+}}}
+
+
+{{{
+st= systime(1)
+for indx=0,99999L do test= dot0([1,2,3],[4,5,6])
+print,systime(1)-st
+}}}
+
+also try profiler
+
+How to improve?  
+
+{{{
+function dot1 vec1,vec2
+  result= total(vec1* vec2)
+  return,result
+end
+}}}
+
+=== Single cross product ===
+
+
+== Array operations ==
+what if `vec=dblarr(3,99)`?
+
+what if `vec=dblarr(3,99)`?
+
+== skymap_vector object ==
+
+== selftest assert method? ==
+
+{{{
+nfail=0
+
+name="test example"
+x=1 & y=-1
+cmnd="x+y EQ 0"
+nfail+= ~self.assert(cmnd,name)  ;# use execute?
+}}}
 
 <wiki:gadget url="http://mathml-gadget.googlecode.com/svn/trunk/mathml-gadget.xml" border="0" up_content="root3x + x^phi + x_1" height="15"/>
