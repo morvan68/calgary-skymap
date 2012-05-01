@@ -20,5 +20,10 @@ svn-propset:
 #svn-propset:
 #	svn propset svn:keywords "Id URL Revision Date Author" $@
 
+
+wget http://www.gnu.org/licenses/gpl-3.0.txt >> COPYING
+
+# try for good ASCII under linux and Windows
+svn propset svn:eol-style native
 #svn propedit svn:ignore fig
 #svn propset svn:ignore "*.aux *.bak *.bbl *.blg *.idx *.ilg *.ind *.lof *.log *.lot *.out *.pdf *.sav *.synctex *.toc" .
