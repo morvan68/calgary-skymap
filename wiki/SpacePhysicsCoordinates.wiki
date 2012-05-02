@@ -1,22 +1,6 @@
-#summary A brief introduction to Subversion
-
-#labels Featured
-
-
-
-= Introduction to subversion =
-
-[http://code.google.com/p/support/wiki/SubversionFAQ Google code FAQ]
-
-[http://svnbook.red-bean.com Version Control with Subversion]
-
-
-
-
-img/CygwinSetupDownloadSite
+#summary Space physics coordinate transformations
 
 = Hapgood =
-
 
 http://www-ssc.igpp.ucla.edu/personnel/russell/papers/gct1.html/
 
@@ -32,8 +16,3 @@ http://sspg1.bnsc.rl.ac.uk/SEG/Coordinates/times.htm
 
 http://www.spenvis.oma.be/help/background/coortran/coortran.html
 http://stereo-ssc.nascom.nasa.gov/coordinates_explanation.shtml
-
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
