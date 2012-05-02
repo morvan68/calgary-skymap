@@ -8,8 +8,8 @@ svn-update:
 svn-commit:
 	svn commit
 
-svn-checkout:
-	svn checkout ${SVN_REPO}trunk . --username brian.jackel@gmail.com
+svn-checkout-skymap:
+	svn checkout ${SVN_REPO}trunk/skymap . --username brian.jackel@gmail.com
 
 svn-checkout-all:
 	svn checkout ${SVN_REPO} . --username brian.jackel@gmail.com
