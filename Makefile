@@ -20,6 +20,9 @@ svn-propset:
 #svn-propset:
 #	svn propset svn:keywords "Id URL Revision Date Author" $@
 
+IGNORE.LATEX="*.aux *.bak *.bbl *.blg *.idx *.ilg *.ind *.lof *.log *.lot *.out *.pdf *.sav *.synctex *.toc"
+svn-ignore-latex: 
+	cd skymap/doc/csa_report_2002 && svn propset svn:ignore ${IGNORE.LATEX}
 
 wget http://www.gnu.org/licenses/gpl-3.0.txt >> COPYING
 
