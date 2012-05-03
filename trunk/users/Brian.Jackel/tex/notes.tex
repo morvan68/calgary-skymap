@@ -1,0 +1,100 @@
+\documentclass[12pt,twoside,openright]{report}
+%\include{datalogy_preamble}
+\usepackage{amssymb,amsmath}
+\usepackage{mathrsfs}  % provides $\mathscr E$ for EMF symbol
+\usepackage[]{graphicx}
+\DeclareGraphicsExtensions{.eps,.pdf,.png,.jpg,.r.eps,.r.pdf,.gif.png}
+%\graphicspath{{../fig/}}
+\usepackage{color}
+\usepackage{url}
+%\usepackage{subeqn}
+
+% Make a larger page (shrink the margins)
+%
+\setlength{\headheight}{14pt}  % default 12pt is too small for fancyhdr
+\setlength{\textwidth}{6.7in}
+\setlength{\textheight}{9.0in}
+\setlength{\evensidemargin}{0.0in}
+\setlength{\oddsidemargin}{0.0in}
+\topmargin -0.5in
+\footskip 0.5in
+
+\begin{document}
+
+\subsection{Rotation about an arbitrary axis}
+
+\url{http://tom.cs.byu.edu/~455/hw/rotation.pdf}
+
+
+A vector $\vec v = (x,y,z)$ is rotated by an angle $\theta$ about an axis given by the unit vector $\hat n = (a,b,c)$.  It can be shown that the $3\times3$ rotation matrix has the form
+\begin{equation}\label{eqn:general_rotation_matrix}
+\begin{bmatrix}
+  a^2 + (1-a^2)\cos\theta & a b (1-\cos\theta) - c \sin\theta & a c (1-\cos\theta) + b \sin\theta \\
+  a b (1-\cos\theta) +  \sin\theta & b^2 + (1-b^2)\cos\theta & b c (1-\cos\theta) - a \sin\theta \\
+  a c (1-\cos\theta) - b \sin\theta & b c (1-\cos\theta) + a \sin\theta & c^2 + (1-c^2)\cos\theta \\
+\end{bmatrix}
+\end{equation}
+
+\subsubsection{Alternative}
+A more geometrically intuitive\footnote{but computationally inferior?} approach starts with noting that the vector $\vec v$ can be decomposed into parts parallel and perpendicular to the rotation axis $\hat n$
+\begin{equation}\label{}
+\vec v = {\vec v}_\parallel + {\vec v}_\perp
+\end{equation}
+where
+\begin{subequations}\label{}
+\begin{eqnarray}
+{\vec v}_\parallel &=& \hat n (\hat n \cdot \vec v) \\
+{\vec v}_\perp &=& \vec v - {\vec v}_\parallel
+\end{eqnarray}
+\end{subequations}
+The process of rotation has no effect on the parallel component, with all changes in the plane perpendicular to the rotation axis.  The rotated perpendicular component $= {\vec v}_\perp^\prime$ will be in a plane is spanned by ${\vec v}_\perp$ and a second vector defined as
+\begin{equation}\label{}
+\vec u = \hat n \times {\vec v}_\perp = \hat n \times {\vec v}   \qquad\qquad \mathbf{because}\; \hat n \times {\vec v}_\parallel = 0
+\end{equation}
+with the the standard right-handed coordinate system so that ${\hat v}_\perp \times \hat u = \hat n$ and a positive angle $\theta$ rotates ${\vec v}_\perp$ towards $\vec u$.  The rotated perpendicular component  can be written in terms of two orthogonal basis vectors and the rotation angle where  $|{\vec u}| = |{\vec v}_\perp| = |{\vec v}_\perp^\prime|$, so
+\begin{equation}\label{}
+{\vec v}_\perp^\prime = {\vec v}_\perp \cos\theta + \vec u \sin\theta
+\end{equation}
+
+\noindent The final rotated vector can be written in several different ways
+\begin{subequations}\label{}
+\begin{eqnarray}
+{\vec v}^\prime &=& {\vec v}_\parallel + {\vec v}_\perp^\prime \\
+       &=& {\vec v}_\parallel + {\vec v}_\perp \cos\theta + \vec u \sin\theta \\
+       &=& {\vec v} + {\vec v}_\perp (\cos\theta-1) + \vec u \sin\theta
+\end{eqnarray}
+\end{subequations}
+
+I suspect that the computational requirements are sub-optimal...
+\begin{enumerate}
+  \item Calculate ${\vec v}_\parallel$: dot product (3 mult, 2 add) followed by vector-scalar multiplication (3 mult) = 6 multiply, 2 addition
+  \item Calculate ${\vec v}_\perp$: vector subtraction = 3 addition
+  \item Calculate ${\vec u}$: cross product = 6 multiply, 3 addition
+  \item Combine terms = 6 multiply + 6 addition
+\end{enumerate}
+...certainly less elegant than a matrix multiplication
+
+\section{IDL code}
+
+Would it be worth introducing a ``skymap\_aim'' object that is an overloaded vector with za/az options?
+Or just overload ``skymap\_vector'' spherical conversions?
+
+There are 4 combinations:
+ 1) theta/phi        co-latitude/longitude , right ascension/declination
+ 2) \bar{theta}/phi  latitude/longitude
+ 3) theta/\bar{phi}  zenith angle/azimuth (clockwise from north)
+ 4) \bar{theta}/\bar{phi} elevation/azimith
+ 5) some wacky camera convention?
+
+Try keyword SPHERICAL=[1|2|4|6] where bit 0 is basic conversion, bit 1 is co-latitude, bit 2 is co-azimuth.
+
+For Cartesian $x,y,z$ the azimuth is the angle in the x-y plane relative to the x-axis and positive towards +y
+$$ \phi = \atan(y,x) $$
+but for geographic East,North,Up azimuth is clockwise from north so we get
+$$ \phi = \atan(x,y) $$
+with the alternative being North,East Down
+$$ \phi = \atan(y,x) $$
+or left-handed coordinates
+
+
+\end{document} 

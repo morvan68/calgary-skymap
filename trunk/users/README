@@ -1,0 +1,9 @@
+# Subversion $Id$
+
+The /user directory branch contains one subdir for each member of the project.
+Feel free to create new ones as needed, but only make changes in your area.
+
+User directories can be used for developing ideas and then moving them into
+the appropriate destination eg.
+
+          svn move my_cool_idea.pro ../../skymap/idl/cool_idea.pro
