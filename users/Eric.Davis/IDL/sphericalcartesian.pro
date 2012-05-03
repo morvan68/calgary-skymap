@@ -10,10 +10,11 @@ end
 
 
 function cartesian,r,phi,theta
-x= double(r*cos(phi)*sin(theta))
-y= double(r*sin(phi)*sin(theta))
-z= double(r*cos(theta))
-return, [x,y,z]
+  x= double(r*cos(phi)*sin(theta))
+  y= double(r*sin(phi)*sin(theta))
+  z= double(r*cos(theta))
+    print, "x =", x, "     y =", y, "     z =", z
+  return, [x,y,z]
 end
 
 
