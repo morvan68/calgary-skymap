@@ -98,17 +98,35 @@ what if `vec=dblarr(3,99)`?
 
 what if `vec=dblarr(3,99)`?
 
+== IDL objects ==
+Discuss motivation for objectification
+ * clear separation of functionality = less spaghetti
+ * reduce input parameter screening eg. it's a "skymap_vector" or can be turned into one, otherwise fail loudly
+
 == skymap_vector object ==
+ * check general "rotation" against simple rotations about the x,y,z axes
+ * check general "rotation" against notes in skymap/doc/generic_rotation.pdf: 
+   * do results agree?
+   * which is faster & by how much?
+ * check Euler_matrix method against Goldstein eqn 4-46
+   * do results agree?
+   * which is faster & by how much?
+ * do we need other self-tests?
+
+== skymap_time object ==
+Gather together all time related stuff into a single place.
+Are we missing any self-tests?
 
 == selftest assert method? ==
-
+Could slightly reduce code in self-test methods by creating
+a skymap_object::assert method eg.
 {{{
 nfail=0
 
 name="test example"
 x=1 & y=-1
 cmnd="x+y EQ 0"
-nfail+= ~self.assert(cmnd,name)  ;# use execute?
+nfail+= ~self.assert(cmnd,name)  ;# use execute: slow but safe?
 }}}
 
 <wiki:gadget url="http://mathml-gadget.googlecode.com/svn/trunk/mathml-gadget.xml" border="0" up_content="root3x + x^phi + x_1" height="15"/>
