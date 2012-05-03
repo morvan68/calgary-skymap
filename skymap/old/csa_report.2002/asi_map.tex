@@ -1,0 +1,1196 @@
+\documentclass[11pt,twoside]{article}   % pre-print version
+
+\usepackage[active]{srcltx} % SRC Specials: DVI [Inverse] Search
+\usepackage[dvips]{graphicx} % for including figures
+\usepackage[dvips]{color}
+\usepackage[square]{natbib}  % AGU style references
+
+\usepackage{verbatim}   %to include other text files and source code listings
+\usepackage{fancyhdr}   %to play with top of page headers
+\usepackage{lastpage}   %to allow "page 1 of N"
+\usepackage{longtable}  %for tables that span multiple pages
+\usepackage{sectsty}    %to modify section headings
+\usepackage{newcent}    %use this to get different looking output
+%\usepackage{times}    %use this to get different looking output
+\usepackage{fancybox}
+\usepackage{multicol}
+\usepackage{longtable}
+\usepackage{colortbl}
+\usepackage{lscape}  % to allow switching between portrait and landscape
+
+\usepackage{makeidx}
+\usepackage{showidx}
+\usepackage{amsfonts}
+
+\hfuzz5pt % Don't bother to report over-full boxes < 5pt
+\vfuzz5pt % Don't bother to report over-full boxes < 5pt
+
+% Make a larger page (shrink the margins)
+%
+ \setlength{\textwidth}{6.0in}
+ \setlength{\textheight}{8.0in}
+ \setlength{\oddsidemargin}{0.5in}
+ \setlength{\evensidemargin}{0.5in}
+
+ \setlength{\parindent}{0pt}  % don't indent paragraphs
+ \setlength{\parskip}{1.3ex plus0.4ex minus0.2ex}  % space between paragraphs
+
+% The  sectsty  package lets us play games with the section headings
+ %\allsectionsfont{\sffamily\noindent\shadowbox}
+ %\sectionfont{\sffamily\noindent\ovalbox}  % got carried away here
+% \allsectionsfont{\color[gray]{0.9}\sffamily\noindent\shadowbox}
+  \allsectionsfont{\color[gray]{0.1}\sffamily\noindent\colorbox[gray]{0.8}}
+
+ \bibliographystyle{plainnat}
+ \makeindex  % required to build index file
+
+ \pagestyle{fancy}
+ \lhead{\today}
+ \chead{ASI Mapping}
+ \rhead{\thepage\ of \pageref{LastPage}}
+ \renewcommand{\headrulewidth}{0.4pt}
+
+ \newcommand{\code}{\tt\footnotesize}
+
+ \newcommand{\note}[1]{\marginpar{\small #1}}
+
+% Magic to show gray background "DRAFT" on all pages
+%
+ \special{!userdict begin /bop-hook{gsave 200 30 translate 65
+rotate /Times-Roman findfont 200 scalefont setfont 0 0 moveto 0.95
+setgray (DRAFT) show grestore}def end}
+
+% Use this to have section numbers in left margin.
+%
+ \makeatletter
+ \def\@seccntformat#1{\protect\makebox[0pt][r]{\csname the#1\endcsname\quad}}
+ \makeatother
+
+
+\begin{document}
+% -----------------------------------------------------------------
+%  TITLE PAGE
+% -----------------------------------------------------------------
+ \begin{titlepage} \begin{center}
+%
+ \vspace*{0.1cm}
+ \doublebox{ \begin{minipage}{6in} \centering
+
+ \vspace*{1.2cm}
+ \shadowbox{\parbox{4in}{\centering
+ \vspace*{0.6cm}
+ \parbox{3.5in}{\centering
+ {\huge\sl NORSTAR \\[0.5cm] ASI Mapping \\[0.2cm] }}
+ }}
+
+ \vspace*{0.5cm}
+  \includegraphics[width=4.2in]{../fig/composite_skymap.jpg.eps}
+ \vspace*{0.5cm}
+
+ \parbox{2in}{\centering \small
+     Brian Jackel \\
+     Institute for Space Research
+     University of Calgary }
+ %
+  \vspace*{0.6cm}
+
+ \parbox{3in}{\centering\small
+  Canadian Space Agency \\
+  Contract Report %\#XXX-YY-ZZZZ
+  }
+  \vspace*{0.6cm}
+
+  \today
+  \vspace*{0.5cm}
+%
+\end{minipage} }
+%
+ \end{center} \end{titlepage}
+
+%
+ \setcounter{tocdepth}{3}
+ \tableofcontents \newpage
+% \listoftables
+% \listoffigures
+
+%
+%
+\section*{Introduction}
+%
+An all-sky imager (ASI) measures the optical intensity of the sky
+over a wide angular extent.  Modern systems use a charge-coupled
+device (CCD) array detector to record the number of incident
+photons during a given exposure interval.  This grid of
+measurements is well suited for digital storage and certain kinds
+of image processing. However, it is ultimately necessary to work
+in more directly physical coordinates, such as geographic latitude
+and longitude. Consequently, it is essential to ``map''
+observations from pixel space to other reference frames and
+coordinate systems.
+ \\[2ex]
+\noindent This report contains a presentation of the concepts and
+formulae required to carry out several useful transformations.
+Some practical methods for estimating orientation and instrumental
+properties are also presented.
+ \\[2ex]
+
+ \begin{figure}[htb!]
+ \begin{displaymath}
+ \begin{array}{c}
+  \fbox{CCD Pixels} \\
+  {\Updownarrow} \\
+  \fbox{Camera Optics} \\
+  {\Updownarrow} \\
+  \fbox{Latitude / Longitude} \Leftrightarrow \fbox{\parbox{3.9cm}{\centering Geographic \\ East / North / Zenith}} \Leftrightarrow \fbox{Azimuth / Elevation} \\
+  {\Updownarrow}\\
+   \fbox{\parbox{5.8cm}{\centering Celestial \\ Right Ascension / Declination}}
+ \end{array}
+ \end{displaymath}
+  \caption{Important coordinate systems for all-sky imagers.
+  \label{fig:flowchart}}
+ \end{figure}
+
+\noindent A summary of useful mappings is shown in figure
+\ref{fig:flowchart}.  Although scientific application of ASI data
+only requires conversion from pixel to geographic coordinates, a
+further transformation to celestial coordinates is extremely
+helpful for absolute determination of certain quantities. This is
+due to the fact that all astronomical objects are essentially
+fixed in the appropriate reference frame.  The ability to
+transform ASI images to the celestial reference frame provides
+confirmation that all quantities associated with camera optics and
+orientation are accurately known. Conversely, unknown quantities
+can be determined by requiring that a sequence of star frames
+produce the appropriate results (i.e. stationary stars) when
+transformed to celestial coordinates.
+
+%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ \newpage
+ \section{Definitions}
+
+\subsection{Matrix Formalism} \label{sec:matrix_formalism}
+
+The problem of mapping ASI data is essentially two dimensional. A
+CCD detects photon counts in a planar grid, while incident light
+may be completely described in terms of zenith angle $\zeta$ and
+azimuth $\alpha$ (or some other pair of angular coordinates).
+Although the source of luminosity (i.e. the aurora) may have a
+complex distribution as a function of distance from the imager,
+none of this information is available from a single frame.
+
+Despite the fundamentally 2-D nature of the problem, it is
+advantageous to represent orientations in terms of 3-dimensional
+vectors.  For example, the angular direction ($\zeta$,$\alpha$)
+can be expressed\footnote{This convention is commonly used in
+physics.  However, a different latitude/longitude system (defined
+in Equations \ref{eqn:coordinates}) is also used in this report.}
+in Cartesian coordinates
+ \begin{eqnarray}
+  x &=& r \sin\zeta \cos\alpha \\
+  y &=& r \sin\zeta \sin\alpha \\
+  z &=& r \cos\zeta
+ \end{eqnarray}
+which can be inverted to obtain the original angular coordinates
+ \begin{eqnarray}
+  \alpha &=& \tan^{-1}\left ( {y \over x } \right ) \\
+  \zeta &=& \tan^{-1}\left ( {\sqrt{x^2 + y^2} \over z} \right )
+ \end{eqnarray}
+regardless of the value for $r$.  Using three Cartesian
+coordinates to represent orientation requires 50\% more storage
+space than a pair of angular coordinates, but has certain
+computation advantages. For example, the angle between two vectors
+is easily determined
+ \begin{equation}
+  \cos\gamma = {{\mathbf{a} \cdot \mathbf{b}}\over{|\mathbf{a}| |\mathbf{b}|}}
+ \end{equation}
+More importantly, many useful transformations can be expressed in
+terms of multiplication with a 3-by-3 matrix
+ \begin{eqnarray}
+  \mathbf{a}_2 &=& \mathbf{T} \, \mathbf{a}_1 \\
+ \left [ \begin{array}{c} x \\ y \\ z \end{array} \right ]_2 &=&
+  \left [\begin{array}{ccc}
+  T_{11} & T_{21} & T_{31} \\
+  T_{12} & T_{22} & T_{32} \\
+  T_{13} & T_{23} & T_{33}
+ \end{array} \right ]
+  \left [ \begin{array}{c}  x \\ y \\ z \end{array} \right ]_1
+ \end{eqnarray}
+Inverse transforms of this class are easily accomplished by
+multiplication with the matrix inverse
+ \begin{equation}
+   \mathbf{a}_1 = \mathbf{T}^{-1} \, \mathbf{a}_1
+ \end{equation}
+where for orthonormal matrices (such as those corresponding to
+rotations)
+ \begin{equation}
+  \mathbf{T}^{-1} = \mathbf{T}^T
+ \end{equation}
+the inverse is equal to the matrix transpose.  Multiple rotations
+can be accomplished by successive multiplication with the
+appropriate matrices.  When doing this it is important to remember
+that matrix multiplication is associative
+ \begin{equation}
+  \left ( \mathrm{T}_3  \mathrm{T}_2 \right ) \mathrm{T}_1 =  \mathrm{T}_3 \left ( \mathrm{T}_2
+   \mathrm{T}_1  \right )
+ \end{equation}
+but not multiplicative
+ \begin{equation}
+  \mathrm{T}_2 \mathrm{T}_1 \ne \mathrm{T}_1 \mathrm{T}_2
+ \end{equation}
+
+\subsection{Celestial Coordinates}
+
+As noted in the introduction, astronomy is not directly relevant
+to the problem of relating ASI frames to geographic coordinates.
+There are, however, benefits to be gained from exploring this
+topic.  Stars in the ASI frames provide an indication that viewing
+conditions are clear.  They can also be used as reference sources
+to determine camera response and orientation, which are the
+central topics of this report.
+
+Precisely determining the orientation of astronomical objects
+relative to a terrestrial observer is not trivial.  Fortunately,
+the requirements for ASI applications are much less demanding than
+for astronomy.  Mapping the entire $180^\circ$ angle of sky to a
+$512\times 512$ element CCD produces a fundamental lower
+resolution limit of approximately 20 arc minutes.  In practice,
+multi-pixel binning may reduce this by another factor of two.
+Camera optics will also have a non ideal point-spread-function,
+further limiting the achievable angular resolution.  Consequently,
+the angular accuracy required for this report is no more than
+approximately 6 arc minutes ($0.1^\circ$).  This will be more than
+adequate for ASI data while allowing for a considerable
+simplification in algorithmic complexity.
+
+Complete formula for conversion between celestial and terrestrial
+coordinates can be found in standard references (for example,
+\cite{lang_1980}). A simplified version of the necessary equations
+are presented by \cite{hapgood_1992} in the context of general
+space physics coordinate conversions. In this notation, conversion
+from celestial to earth centered coordinates (GEI to GEO) can be
+expressed as a rotation about the z-axis common to both systems.
+This rotation is in the plane of the Earth's geographic equator
+from the first point of Aries\footnote{From \cite{lang_1980}:
+``{\it Vernal equinox}: that point of intersection between the
+ecliptic and the celestial equator which occurs when the Sun is
+going from south to north. The equinox has the symbol $\gamma$ and
+is sometimes called the first point of Aries.''}
+%
+to the Greenwich Meridian. The rotation angle $\theta$ is the
+Greenwich Mean Sidereal Time given by
+ \begin{equation}
+  \theta = 100.461 + 36000.770 T_0 + 15.04107 UT
+ \end{equation}
+where $T_0$ is the time in Julian centuries (36525 days) from
+12:00 UT on 1 January 2000 (known as epoch 2000.0) to the previous
+midnight and $UT$ is the universal time.  Conversion of a GEI
+Cartesian vector into the GEI system is accomplished by
+multiplication with the rotation matrix
+ \begin{equation}
+ {\mathbf T_1} = \left[
+ \begin{array}{ccc}
+  \cos\theta & \sin\theta & 0 \\
+  -\sin\theta & \cos\theta & 0 \\
+  0 & 0 & 1
+ \end{array}
+ \right]
+ \end{equation}
+and the reverse transformation by multiplication with $T_1^{-1} =
+T_1^T$.
+
+
+
+ \subsubsection{Parallax}
+ \label{sec:parallax}
+
+As given in the 1996 Astronomical Almanac, B61, the corrections
+for diurnal parallax (due to a displacement for the observer from
+the center of the earth) of distant objects are
+ \begin{eqnarray}
+  \Delta\alpha &=& \pi (\rho \cos\varphi \sin H \sec\delta) \\
+  \Delta\delta &=& \pi (\rho\sin\varphi\cos\delta - \rho\cos\varphi\cos H \sin\delta)
+ \end{eqnarray}
+where $\rho$ is the geocentric distance in units of the Earth's
+equatorial radius, $\varphi$ is the geocentric latitude, $H=
+\theta_0 - \alpha$ is the local hour angle, and $\pi$ may be
+calculated from $8''.794$ divided by the geocentric distance of
+the body in astronomical units.  These will be very small
+corrections and can be neglected in most cases.  For the moon (and
+other very close bodies such as satellites) more precise formulae
+are required.
+
+
+
+\subsection{Geodetic and Geocentric Coordinates}
+%
+Relating ASI measurements to astronomical sources requires only
+the use of geocentric (earth-centered spherical) coordinates.
+However, an understanding of geodetic coordinates is required to
+calculate geocentric site locations from commonly available
+information and to convert to geographic latitude and longitude.
+
+For the purposes of this report, the term ``geocentric'' will be
+used to refer to a Cartesian reference frame with the z-axis
+aligned with the geographic north pole (Earth's rotation axis) and
+the x-axis defined by the intersection of the Greenwich Meridian
+and the geographic equator.  The y-axis is then defined by the
+requirement that the coordinate system be right-handed.  It may
+also be useful to work with spherical coordinates, which will be
+explicitly defined below.
+
+The term ``geodetic'' will be used in this report to denote a
+system which partially accounts for the (slightly) non-spherical
+shape of the earth. From \S 24.1 of
+\cite{geospace_handbook_geodesy}:
+\begin{quotation}
+The geoid is the equipotential surface in the earth's gravity
+field that coincides most closely with the undisturbed mean sea
+level extended continuously under the continents.  The direction
+of gravity is perpendicular to the geoid at every point.  On the
+earth's surface, this direction is defined by two angles, the
+astronomical coordinates: The astronomical latitude is the angle
+$\Phi$, $-90^\circ \le \Phi \le 90^\circ$, that the gravity vector
+forms with the equatorial plane; and the astronomical longitude is
+the angle $\Lambda$, $0^\circ \le \Lambda \le 360^\circ$ and
+positive eastwards, that the plane defined by this vector and the
+celestial pole forms with Greenwich meridional plane.
+
+The reference ellipsoid is a a simple mathematical figure that
+closely approximates the geoid, historically on a regional basis,
+but on a global basis for modern requirements.  It is a surface of
+revolution formed by rotating an ellipse about its minor
+(vertical) axis resulting in an oblate (flattened at the poles)
+ellipsoid.
+\end{quotation}
+
+Definition of geodetic coordinates requires the adoption of some
+reference ellipsoid.  Two examples are given in table
+\ref{tab:referencegeoids}; the most useful of these is WGS84, used
+for GPS satellite positioning systems.  It differs only slightly
+from the International Astronomical Union (IAU) ellipsoids.
+
+ \begin{table}[hbt!]
+ \hrule
+ \centering3
+ \begin{tabular}{lclllr}
+   {} & {}  & IAU 1976 & WGS 84 (GPS) & \\
+   semi-major axis & $a$  & $6378.140$ km & $6378.137$ km & equatorial radius\\
+   flattening & $f$  & $1/298.257$ & $1/298.257223563$ \\
+   semi-minor axis & $b$  & $6356.755$ km & $6356.752$ km &$b=a(1-f)$\\
+   eccentricity & $e$  & $8.181921 \times 10^{-2}$ & $8.181919 \times 10^{-2}$ &$1-e^2 = (1-f)^2$\\
+ \end{tabular}
+ \hrule
+  \caption{Parameters for standard reference geoids.
+  \label{tab:referencegeoids}}
+  \hrule
+\end{table}
+
+In most cases, values of latitude and longitude are implicitly
+given in geodetic coordinates, and conversion to geocentric is
+required before further transformations. The following
+equations\footnote{Note the difference between the convention used
+here and in \S \ref{sec:matrix_formalism}.} relate geocentric
+(Cartesian and spherical) and geodetic coordinates:
+%
+ \begin{eqnarray}
+ \mathbf{Geocentric} & \mathbf{Geocentric} & \quad\mathbf{Geodetic} \nonumber \\[-5pt]
+ \mathbf{Cartesian} & \mathbf{Spherical} & \quad\mathbf{Ellipsoidal} \nonumber \\
+  X_{GEO} =& R \cos\varphi \cos\lambda &= (N+h) \cos\phi \cos\lambda   \nonumber\\
+  Y_{GEO} =& R \cos\varphi \sin\lambda &= (N+h) \cos\phi \sin\lambda  \qquad \\
+  Z_{GEO} =& R \sin\varphi &=  \left( {b^2 \over a^2} N +h \right) \sin\phi   \nonumber
+ \label{eqn:coordinates}
+ \end{eqnarray}
+%
+Longitude $\lambda$ is the same in both systems, $\varphi$ is the
+\emph{geocentric} latitude for a spherical earth and $\phi$ is the
+\emph{geodetic} latitude (geographical latitude on the ellipsoid).
+R is the spherical earth radius (6371.2 km), $h$ is the local
+height above the reference ellipsoid, and $N$ is the east-west
+radius of curvature (which is a function of latitude)
+%
+ \begin{equation}
+  N(\phi) = {{a^2}\over \sqrt{a^2 \cos^2\phi + b^2 \sin^2 \phi}}
+ \end{equation}
+
+The inverse transform is more complicated. The quantity
+ \begin{equation}
+  p = \sqrt{X_{GEO}^2 + Y_{GEO}^2} = (N+h) \cos\phi
+ \end{equation}
+can be directly calculated from Cartesian coordinates, and also
+provides a useful expression for the geodetic height
+ \begin{equation}
+   h(\phi) = {p \over \cos\phi} - N(\phi)
+ \end{equation}
+Geodetic latitude can be determined by successive approximation of
+ \begin{equation}
+  \tan\phi_{(i+1)} = {Z_{GEO}\over p} \left(1-e^2 {N(\phi_{(i)}) \over {N(\phi_{(i)}) + h(\phi_{(i)}) }} \right)^{-1} \\
+ \end{equation}
+with a starting value $\phi_{0} = \tan^{-1} \left( Z_{GEO} / p
+\right) = \varphi $.  In practice this converges after a few
+iterations.
+
+ \subsubsection{Local Orientation}
+
+The geodetic eastward direction expressed in Cartesian
+coordinates is easily calculated
+ \begin{equation}
+   \widehat{\mathbf{east}} = {\partial \over \partial \lambda}
+   [X,Y,Z]_{GEOC} = [ -\sin\lambda, \cos\lambda, 0]
+ \end{equation}
+as is the zenith (vertical)
+ \begin{equation}
+   \widehat{\mathbf{zenith}} = {\partial \over \partial h}
+   [X,Y,Z]_{GEOC} = [ \cos\phi\cos\lambda, \cos\phi\sin\lambda, \sin\phi]
+ \end{equation}
+Direct calculation of the northward vector is less trivial, but
+can be easily obtained from a cross product
+ \begin{equation}
+  \hat{y} = \widehat{\mathbf{north}} = \widehat{\mathbf{zenith}}
+  \times \widehat{\mathbf{east}} = [ -\sin\phi \cos\lambda, -\sin\phi \sin\lambda, \cos\phi]
+ \end{equation}
+
+Explicitly, the relationship between local geodetic and cartesian
+geocentric coordinates is given by:
+%
+ \begin{equation}
+ \left [ \begin{array}{c}
+  x \\ y \\ z
+ \end{array} \right ]_{geoc}
+ =
+ \left [ \begin{array}{ccc}
+  -\sin\lambda & -\sin\phi\cos\lambda & \cos\phi\cos\lambda \\
+  \cos\lambda  & -\sin\phi\sin\lambda & \cos\phi\sin\lambda \\
+  0            &  \cos\phi            & \sin\phi
+ \end{array} \right ]
+  \left [ \begin{array}{c}
+  east \\ north \\ zenith
+ \end{array} \right ]_{geod}
+ \end{equation}
+%
+where as usual the inverse transform is provided by the matrix
+transpose.
+
+ \subsubsection{The Celestial Pole}
+
+By definition, the GEI vector from the center to the earth towards
+the celestial north pole is $[0,0,\infty]$.  For observations from
+other locations, the effect of an offset vector ( may have to be
+included
+ \begin{equation}
+  \left [ \begin{array}{c}
+   x \\ y \\ z
+   \end{array} \right ]_{local}
+ =
+  \left [ \begin{array}{c}
+   x \\ y \\ z
+   \end{array} \right ]_{GEI}
+   +
+   \left [ \begin{array}{c}
+   x \\ y \\ z
+   \end{array} \right ]_{position}
+ \end{equation}
+with local azimuth and elevation determined for the offset vector.
+This degree of detail is only necessary for celestial objects that
+are relatively close, as noted in \ref{sec:parallax}.
+Consequently, the unit vector pointing towards the celestial pole
+is very well approximated by $[0,0,1]_{gei}$ for any location on
+the earth.  At all times this transforms to $[0,0,1]_{geoc}$ which
+in turn becomes
+ \begin{equation}
+  \left [ \begin{array}{c}
+   0 \\ 0 \\ 1
+   \end{array} \right ]_{geoc}
+ =
+  \left [ \begin{array}{c}
+   0 \\ \cos\phi \\ \sin\phi
+   \end{array} \right ]_{geod}
+ =
+  \left [ \begin{array}{c}
+   east \\ north \\ zenith
+   \end{array} \right ]_{geod}
+ \end{equation}
+so the local azimuth is always zero, and the zenith angle equal to
+the co-latitude $\bar\phi = 90^\circ - \phi$.
+
+ \subsection{Instrument Orientation}
+  \label{ssec:cameraorientation}
+
+During field installation it is desirable to orient an ASI so that
+it is pointing vertically and aligned with north at the top of the
+image. Vertical levelling to a few degrees is easily accomplished.
+Azimuthal alignment is more difficult, unless orientation of the
+building or mount system is precisely known. Consequently, some
+general method of accounting for non-ideal alignment is required.
+
+Starting with a vector in some Cartesian coordinate system
+$\{x_1,y_1,z_1\}$, it is often useful to carry out a rotation
+about one axis by some angle $\psi$ to produce the new vector
+$\{x_2,y_2,z_2\}$. This can be expressed as matrix multiplication
+by some orthonormal array $\mathbf{R}$
+%
+ \begin{equation}
+  X_2 = \mathbf{R}(\psi,\mathrm{axis}) \: X_1
+ \end{equation}
+
+Multiple rotations can be accomplished by successive
+multiplication by the appropriate matrices. The transformation
+from any given Cartesian coordinate system to another can be
+achieved by three successive rotations performed in a specific
+sequence. One common convention uses three \emph{Euler angles}
+applied to the $z_1$, $x_2$, and $z_3$ axes.  However, as noted by
+\cite[pp 147-148]{goldstein_1980} these systems
+\begin{quote}
+ \ldots have the drawback that when the primed coordinate system
+ is only slightly different from the unprimed system, [certain
+ angles] become indistinguishable, as their respective axes of
+ rotation{\ldots}are then nearly coincident.  To get around this
+ problem all three rotations are taken around different axes.  The
+ first rotation is about the vertical axis and gives the {\it
+ heading} or {\it yaw} angle $\phi$.  The second is about a perpendicular
+ axis fixed in the vehicle and normal to the figure axis; it is
+ measured by the {\it pitch} or {\it attitude} angle $\theta$.  Finally
+ the third angle is one of rotation about the figure axis of the
+ vehicle and is the {\it roll} or {\it bank} angle $\psi$.
+\end{quote}
+%
+The resulting rotation matrix\footnote{Care must be taken to avoid
+typographical errors when coding the full $\mathbf{T}_3$ matrix.
+For languages where matrix multiplication is built-in (such as
+{\sf IDL}), it may be simpler to construct and multiply the three
+elementary rotation matrices.} %\small
+%
+ \begin{eqnarray}
+%
+ \mathbf{T}_3 &=& \mathbf{T}(\psi,x_2) \mathbf{T}(\theta,y_1)
+ \mathbf{T}(\phi,z_0) \\
+  &=& \left[
+ \begin{array}{ccc}
+  \cos\theta\cos\phi &
+  \cos\theta\sin\phi &
+  -\sin\theta \\
+ %
+  \sin\psi\sin\theta\cos\phi - \cos\psi\sin\phi &
+  \sin\psi\sin\theta\sin\phi + \cos\psi\cos\phi &
+  \cos\theta\sin\psi \\
+ %
+  \cos\psi\sin\theta\cos\phi + \sin\psi\sin\phi &
+  \cos\psi\sin\theta\sin\phi - \sin\psi\cos\phi &
+  \cos\theta\cos\psi \\
+  %
+ \end{array}
+ \right] \nonumber
+%
+ \end{eqnarray} \normalsize
+can be used to transform between two arbitrary coordinate systems
+$X$ and $X^\prime$. This is a natural system for ground based
+work.
+
+An ideally mounted camera would be aligned with the local north,
+east, and vertical vectors.  In practice it is usually possible to
+orient the camera within a few degrees of vertical, but exact
+north/south alignment is more difficult, and may be impossible due
+to physical constraints (i.e. building layout).  As well, the CCD
+alignment may not be consistent with the external camera mounting.
+Typical values for ``yaw'' may therefore be large, while ``pitch''
+and ``roll'' are expected to be small. Hence, the transformation
+from local geodetic orientation begins with a rotation about the
+zenith ($z_1$).  This could involve angles as large as $\pm
+180^\circ$. Subsequent rotations about the $y_2$ and $x_3$ axes
+are expected to be small if the instrument is nearly level.
+
+%Some kind of camera system will be placed in front of the
+%detector, and the entire apparatus will be attached to some
+%mounting system.  It is crucial to determine the relationship
+%between camera optical angles and locations on the detector, as
+%well as orientation of the camera with respect to the real world.
+%
+%Section \ref{ssec:cameraoptics} will explore the mapping between
+%optics and the CCD.   For this we will assume that the CCD is
+%aligned perfectly flat in the camera focal plane.  Section
+%\ref{cameraorientation} will present issues associated with camera
+%orientation.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+ \subsection{Optical System}
+
+Many optical systems, including the NORSTAR ASIs, are circularly
+symmetric about an ``optical axis''.  Incoming light rays arrive
+at some angle $\gamma$ with respect to the optical axis, and are
+fully specified in terms of a second polar angle $\psi$.  After
+passing through the camera optics the ray will exit in some new
+direction ($\gamma^\prime, \psi^\prime$).
+
+
+ \subsubsection{Image Rotation}
+For the purposes of this report it will be
+assumed\footnote{Instrument schematics indicate that images should
+not be reversed, but including a reversal produces produces small
+values of yaw for well aligned instruments.} that the polar angle
+is reversed ($\psi= - \psi^\prime$) by the camera optics. This is
+true for many imaging systems in which the output plane is
+mirrored about the $x$ and $y$ axes. The matrix representation of
+this effect
+ \begin{equation}
+  \mathbf{T} = \left [ \begin{array}{ccc}
+  -1 & 0 & 0 \\
+  0 & -1 & 0 \\
+  0 & 0 & 1
+  \end{array} \right ]
+ \end{equation}
+is equivalent to a $180^\circ$ rotation about the optical ($z$)
+axis.  This could be folded into the instrument frame rotation
+from the previous section, but for this report will be explicitly
+included in the optical transformations.
+
+
+ \subsubsection{Image Scaling}
+Changing $\gamma$ to $\gamma^\prime$ has the effect of expanding
+or contracting the solid angle subtended by the image.  For an ASI
+the goal is a reduction of the $2\pi$ steradian all-sky field of
+view onto an angular extent approximately equal to
+ \begin{equation}
+  \Omega \approx {{L_x \times L_y} \over f}
+ \end{equation}
+where $f$ is the focal length from the optics to the CCD, and
+$L_x,L_y$ are the CCD dimensions.
+
+A lens that covers a hemispherical field of view (180 degrees) is
+usually called a fish-eye lens.  These lenses have inherent large
+distortion because it is not possible to form an image of a
+hemispheric field onto a plane without distortion.  This
+distortion should not be considered as an aberration, but as a
+necessary result of the projection\footnote{Much of the
+information in this section was taken from notes provided by
+Robert Eather of Keo Consultants.}.
+
+There are five standard projection systems that have been used in
+fish-eye lens design.  One convention for representing these
+expresses the linear displacement in the image plane $r$ in terms
+of the system focal length $f$ and initial off-axis angle
+$\gamma$. However, the relationship between $r$ and $\gamma$ may
+be highly nonlinear, and not amenable to simple modelling.
+Consequently, the convention used here expresses the final
+off-axis angle in terms of linear displacement and focal length
+ \begin{equation}
+  {r\over f} = \tan\gamma^\prime
+ \end{equation}
+The equations governing the five standard projections are then
+%
+ \begin{eqnarray}
+  \tan\gamma^\prime &=& \tan\gamma  \mbox{\hspace{5.9ex}normal camera lens}\\
+   &=& 2 \tan{\gamma\over 2}  \mbox{\hspace{3.9ex}stereographic} \\
+   &=& \gamma  \mbox{\hspace{9.35ex}equidistant}\\
+   &=& \sin\gamma  \mbox{\hspace{6.35ex}orthographic} \\
+   &=& 2\sin{\gamma\over 2} \mbox{\hspace{4.45ex}equisolid}
+ \end{eqnarray}
+%
+The left panel of Figure \ref{fig:fisheyefunctions} shows all five
+of these functions in terms of entrance angle and normalized
+linear displacement.
+
+Almost all commercially available fish-eye lenses for 35 mm and
+medium format cameras are of the equidistant projection type, so
+that there is no contraction of the image near the edges.  The
+NORSTAR cameras from KEO Consultants use this optical system.
+However, a 1999/08/31 fax from Bob Eather contains a plot that is
+somewhere between equisolid and orthographic.  We must expect that
+in general the mapping function will be non-ideal, and may vary
+from camera to camera.  A test of low-order polynomial
+approximations to the standard projections was found to be
+unsatisfactory. Further tests showed that low order order rational
+polynomials were much superior.  The simple form
+ \begin{equation}
+   \gamma^\prime = {{a_1 \gamma}\over{1+b_2 \gamma^2 }}
+  \label{eq:gammafunc}
+ \end{equation}
+gave fits good to approximately $0.1^\circ$ while a slightly more
+complicated form
+ \begin{equation}
+   \gamma^\prime = {{a_1 \gamma + a_3 \gamma^3}\over{1+b_2 \gamma^2 + b_4 \gamma^4}}
+   \label{eq:gammafunc2}
+ \end{equation}
+gave maximum errors on the order of $0.01^\circ$.  The right panel
+of Figure \ref{fig:fisheyefunctions} contains a plot of the errors
+as a function of angle. These results suggest that equations of
+the form \ref{eq:gammafunc} or \ref{eq:gammafunc2} should be
+adequate for approximating the actual camera mapping function.
+
+\begin{figure}
+ \centering
+  \includegraphics[width=0.4\columnwidth]{../fig/fisheye_functions}
+  \includegraphics[width=0.4\columnwidth]{../fig/fisheye_ratpolyfits}
+    \caption[Fish-eye functions]
+   {Left Panel: Plots of five ideal ``fish-eye functions'' mapping angle from optical
+     axis to radial displacement.  Right Panel: Errors in
+     approximating functions with equation \ref{eq:gammafunc2}.
+     \label{fig:fisheyefunctions}  }
+\end{figure}
+
+
+%Note that we're assuming the CCD is perfectly flat in the image
+%plane.  This should be very nearly true, and I don't want to think
+%about how to deal with it if it's not.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
+%
+\subsection{CCD Pixels}
+
+The detector is assumed to be a rectangular array of size $L_x
+\times L_y$ with $N_x \times N_y$ rectangular pixels.  The pixels
+will be indexed with integers ranging from $x_{CCD} = 0\ldots
+N_x-1$ , $y_{CCD} = 0\ldots N_y-1$. For the purposes of this
+document we will assume that the pixels completely
+fill\footnote{
+ %
+In practice there may be dead space between the light sensitive
+regions.  This would be important for calculating response to
+luminous flux.  However, that does not matter for the geometrical
+issues considered in this document, so long as the pixels are
+evenly spaced. }
+ %
+the CCD and thus have dimensions $d_x={L_x \over N_x}$, $d_y= {L_y
+\over N_y}$.  Finally, it will also be convenient to define the
+pixel aspect ratio $a_{y/x} = {d_y / d_x}$.
+
+We will typically be interested in the location with respect to
+the CCD position corresponding to the ``optical axis''
+$(x_o,y_o)$. Furthermore, it is more convenient to work with a
+dimensionless quantity produced by normalizing with pixel size.
+The resulting ``pixel radius''
+ \begin{equation}
+  r_p = d / d_x = \sqrt{ (x - x_o)^2 + a_{y/x}^2 \, (y - y_o)^2 }
+  \label{eqn:pixelradius}
+ \end{equation}
+and ``pixel angle''
+ \begin{equation}
+  \eta_p = \tan \left( a_{y/x} {{y-y_o}\over{x-x_o}} \right)
+  \label{eqn:pixelangle}
+ \end{equation}
+are useful coordinates for relating CCD response to the optical
+system.  Inverting these to recover pixel indices is
+straightforward
+ \begin{eqnarray}
+  x &=& x_o + r_p \; \cos\eta_p \\
+  y &=& y_o + r_p \; \sin\eta_p
+ \end{eqnarray}
+
+
+ \begin{figure}[htb!]
+ \centering
+ \setlength{\unitlength}{2.0cm}
+ \begin{picture}(5,4)
+
+ \color[gray]{0.5}
+ \multiput(1,1)(0.0,0.1){31}{\line(1,0){3.75}}
+ \multiput(1,1)(0.125,0.0){31}{\line(0,1){3}}
+ \color{black}
+
+ \thicklines
+
+ \put(1.5,0.7){\vector(1,0){2}}
+ \put(2,0.3){$\mathbf{X}_{CCD}$}
+
+ \put(0.7,1.5){\vector(0,1){2}}
+ \put(0.1,1.2){$\mathbf{Y}_{CCD}$}
+
+ \put(2.45,2.45){\circle*{0.1}}
+ \put(1.8,2.1){$x_o,y_o$}
+
+ \put(2.47,2.48){\vector(1,1){1.1}}
+ \put(3.7,3.65){\circle*{0.1}}
+ \put(3.8,3.7){$x,y$}
+ \put(2.9,3.2){$r_p$}
+
+% \put(2.5,2.0){\oval(1.5,1.5)[tr]}
+ \qbezier(3.05,3.05)(3.55,3.05)(3.55,2.45)
+ \put(3.2,2.7){$\eta_p$}
+
+ \qbezier[20](2.45,2.45)(3.0,2.45)(3.8,2.45)
+
+\end{picture}
+ \caption{An illustration of the coordinate
+systems and conventions used for a CCD.  The optical axis
+$(x_0,y_0)$ is deliberately placed off-center.  In practice it
+will be near, but not necessarily exactly at, the CCD center
+point.}
+\end{figure}
+
+\newpage
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Data}
+
+All-sky imagers typically use narrow band filters to isolate
+wavelengths of auroral interest while minimizing background
+contamination. The resulting images will contain light from
+celestial sources, but this may be obscured by auroral and airglow
+contributions.  In addition to the auroral filters, many systems
+also take data using one or more background channels with
+passbands in spectral regions where no auroral luminosity is
+expected.  These background channels are essential for accurate
+photometric work with faint emissions, but also produce useful
+``star frames''. NORSTAR ASIs typically have a background 2.0 nm
+filter centered at 480.0 nm (sometimes denoted as {\code BACKGR}).
+Exposures of a second or more at this wavelength will image
+several hundred stars if the viewing conditions are good.
+High-pass (near-infrared) and open filters may also be useful,
+although no data from these will be used for this report.
+
+\begin{figure}[hbt!]
+ \centering
+  \includegraphics[width=0.95\columnwidth]{../fig/onenight}
+    \caption[A one hour sequence.]
+   {A one hour sequence with 59 background frames from Gillam
+   during 06-07 UT December 21, 2001.  Edge-enhancement has
+   been used to emphasize star tracks.
+   The Big Dipper is visible to the left of Polaris, which is
+   a single bright point source at pixel coordinates 122,67.
+   An overhead cable can be seen in the upper portion
+   of the frame, with a GPS antenna and light-shield in the lower left corner.
+     \label{fig:onenight}  }
+\end{figure}
+
+
+\newpage
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Fitting} \label{sec:fitting}
+
+Three parameters are required to fully specify the instrument
+orientation, two more for the CCD alignment, and at least one more
+for the camera optics.  Determining these six (or more) parameters
+is the central focus of this report.  Previous sections contain
+all the information required to convert from pixel coordinates to
+a celestial reference frame.  The problem is now to select a set
+of orientation and instrument parameters that is in some sense
+optimal.  A practical solution requires the definition of some
+quality function which provides a quantifiable way of ranking
+results.  Using this quality function, standard algorithms may be
+used to search for the ``best'' set of parameters.  In practice it
+is relatively simple to find a good solution, but much harder to
+be sure that it is the best, as parameter space may contain many
+local minima, and convergence to a global minimum may be
+impossible to guarantee.
+
+
+ \subsection{Initial Values}
+
+Parameter estimates can be determined from celestial sources with
+known locations. Initially, only sources at relatively small
+zenith angles ($<45^\circ$) should be used.  Working with low
+elevation targets may provide better constraints on camera
+orientation, but requires more complex models of the optical
+function.  Unless there is a reason to do otherwise, it is useful
+to assume that the camera is roughly level, so $tilt=0, pitch=0$.
+In many cases the system will also be roughly north-south aligned,
+in which case $yaw \approx 0$.
+
+ \begin{table}[htb!]
+   \begin{center}
+   \hrule
+   \footnotesize
+   \verbatiminput{c:/data/norstar/gill/gill_19700101_polaris.asi_info}
+   \normalsize
+   \hrule \vspace*{-3ex}
+   \end{center}
+     \caption[Initial values]
+   {Camera parameters for Gillam estimated from a single star frame at 11:12 UT
+   on December 23, 2001.
+     \label{tab:initial_values}  }
+   \hrule
+ \end{table}
+
+Viewed from Gillam,  Polaris is nearly stationary at azimuth
+$0.0^\circ$ and a zenith angle of $33.6^\circ$.  Examination of a
+frame sequence from 2001/12/23 shows a peak brightness at
+approximately\footnote{More precision could be obtained by fitting
+or centroiding, but that is not warranted at this stage.} $x=122,
+y=67$.  Eta Ursa Major is convenient as a second source, as it is
+easily identified (the last bright point in the handle of the Big
+Dipper) and travels over a useful range of sky.  At 11:21 UT Eta
+Ursa Major was at pixel $x=86, y=117$ which should correspond to
+azimuth $90.1^\circ$ and zenith angle $24.3^\circ$. Assuming
+approximate north-south alignment, the CCD position of the optical
+axis is $x_0\approx 122, y_0\approx 117$ and the first optical
+parameter is
+ \begin{equation}
+  a_1 \approx {{122-86}\over 24} \approx 1.5 \qquad\qquad
+  a_1\approx {{117-67}\over 34} \approx 1.47
+ \end{equation}
+so an initial value of 1.48 is not unreasonable.  Using these
+values (summarized in Table \ref{tab:initial_values}) produces
+results shown in Figure \ref{fig:bigdipper_smeared}, which are
+obviously smeared and offset from the correct locations.  Using
+improved values (Table \ref{tab:monte_values}) gives the results
+in Figure \ref{fig:bigdipper} where stars are better localized and
+have offsets of less than a degree.  However, other regions of the
+sky (not shown) still have small mapping errors.
+
+\begin{figure}[htb!]
+  \includegraphics[width=0.95\columnwidth]{../fig/bigdipper_smeared_image.eps}
+    \caption[Poor quality composite image of the Big Dipper]
+   {Composite image of the Big Dipper using parameters from Table
+   \ref{tab:initial_values}.
+     \label{fig:bigdipper_smeared}  }
+\end{figure}
+
+ \subsection{Quality of Fit}
+
+Qualitative assessment of the results produced by any set of
+parameters is simple.  Images projected into celestial coordinates
+are obviously ``better'' if stars are properly focused (Figure
+\ref{fig:bigdipper}) and worse if stars are smeared or offset from
+their correct positions (Figure \ref{fig:bigdipper_smeared}).
+Visual examination is sufficient for identifying a good fit and
+even for determining whether a change in parameters provides
+further improvement.  Quantifying this is more difficult.  Several
+methods were explored for this report, with the goal being to
+determine a robust and easily calculated quantity that accurately
+reflects the quality of a projection.
+
+The current algorithm is encapsulated in the IDL program
+{\verb!asi_map_focus.pro!} included in \S \ref{sec:idl_code}. It
+seems to work reasonably well, but could probably be improved.
+
+
+ \subsection{Random Searching}
+
+As noted previously, there may not be a single global minimum.  A
+general exploration of parameter space can help determine where
+local minima may be located, and validate the choice of initial
+parameters.  Systematic searches of a $d$ dimensional parameter
+space require $O(n^d)$ evaluations of the quality function, where
+$n$ is the number of divisions per dimension.  A comprehensive
+high-resolution multi-dimensional search may require unreasonable
+amounts of computing power.  An alternative is to evaluate the
+quality function at random points in parameter space.  Such a
+Monte Carlo search was carried out with 25,000 points over a wide
+range of parameters, with a subsequent 25,000 points over a
+smaller parameter range near the optimal fit.  Results are shown
+in Figure \ref{fig:monte_scatter}.  All parameters exhibit a clear
+single minimum.
+
+\begin{figure}[htb!]
+  \includegraphics[width=0.95\columnwidth]{../fig/monte_scatter.eps}
+    \caption[Monte Carlo parameter search]
+   {Results from a Monte Carlo search of 6-dimensional parameter space.
+    Darker symbols are from the first stage of a wide search (25,000 points),
+    lighter symbols from the second stage (25,000 points) concentrating on the
+    region of best fit.  Quality of fit is indicated on the
+    y-axis, with small (more negative) numbers corresponding to
+    better fits.
+     \label{fig:monte_scatter} }
+\end{figure}
+
+While not as time consuming as an exhaustive search, this monte
+carlo survey required nearly 24 hours on a desktop computer.  This
+is not an issue if parameter estimates only need to be
+re-determined for a few cameras each year.  Increasing
+computational resources are likely to keep pace with expansion of
+the NORSTAR project; some improvements in code efficiency are also
+possible.
+
+ \begin{table}[htb!]
+   \begin{center}
+   \hrule
+   \footnotesize
+   \verbatiminput{c:/data/norstar/gill/gill_20010801_polaris.asi_info}
+   \normalsize
+   \hrule \vspace*{-3ex}
+   \end{center}
+     \caption[Initial values]
+   {Camera parameters for Gillam from a Monte Carlo search.
+     \label{tab:monte_values}  }
+   \hrule
+ \end{table}
+
+
+\begin{figure}[htb!]
+  \includegraphics[width=0.95\columnwidth]{../fig/bigdipper_image.eps}
+    \caption[Composite image of Ursa Major]
+   {Projection of 54 background frames from 06-12UT 2001/12/21
+   onto a common GEI grid for the region containing Ursa Major.
+   Pointing accuracy is on the order of $1/2^\circ$.
+     \label{fig:bigdipper}  }
+\end{figure}
+
+
+ \subsection{Systematic Optimization}
+There are many algorithms designed to search for minima in a
+multi-dimensional parameter space.  The {\sf IDL} routine {\tt
+amoeba} \citep[see \S 10.4]{numerical_recipes} was used for this
+report.  This algorithm does not require derivatives, which are
+not directly available here and would have to be estimated
+numerically.  It is not particularly efficient, but has proven to
+be extremely robust.  Other, ``better'', routines tended to
+proceed inappropriately when confronted with bad data.  Such
+behavior is unacceptable for a final goal of automatic fitting
+without human intervention.
+
+
+\begin{figure}[htb!]
+  \includegraphics[width=0.95\columnwidth]{../fig/fit_1d.eps}
+  \caption{Quality of fit as a function of the optical parameter $a_1$.
+   There is an optimal minimum near $a_1=1.44$, but fitting algorithms
+   may be confused by the local minimum at $a_1=1.49$.
+     \label{fig:fit_1d}  }
+\end{figure}
+
+
+\begin{figure}[htb!]
+  \includegraphics[width=0.95\columnwidth]{../fig/fit_2d.eps}
+    \caption{Contour plot of fit quality for various estimates of
+    the CCD optical axis $(x_0,y_0)$.  A clear minimum is evident
+    near $(123,119)$.
+     \label{fig:fit_2d}  }
+\end{figure}
+
+
+\clearpage
+\section{Viewing Conditions}
+
+If camera orientation and optical parameters are known, celestial
+sources may be used for other purposes.  One particularly useful
+application is determination of viewing conditions, as clouds and
+haze will reduce or eliminate the photon flux from stars. A
+measure of star brightness relative to a surrounding star-free
+region consequently provides an indication of atmospheric
+transmission. This indicator can be determined automatically and
+may be sufficiently quantitative as to distinguish between clear
+sky, haze, and thin cloud.  This is in contrast to visual
+examination of star frames, which is fundamentally qualitative and
+labor intensive.
+
+\begin{figure}[hbt!]
+  \includegraphics[width=0.95\columnwidth]{../fig/clearsky_polaris}
+    \caption[Clear sky estimates using Polaris]
+   {Background brightness (squares) and excess counts due to
+   Polaris (stars).
+     \label{fig:clearsky_polaris}  }
+\end{figure}
+
+Polaris is often used as a target for photometric determination of
+viewing conditions because it is essentially fixed in the sky and
+is isolated from other bright stars.  These properties are also
+useful for ASI applications.  Even without accurate knowledge of
+the camera optics and orientation, it is straightforward to
+identify the region of pixels containing Polaris, as well as an
+adjacent star-free region.  Visual examination of a sequence of
+frames during several hours of 2001/12/23 suggests hazy conditions
+during the first few hours of this interval after which the sky
+appears to be clear. The sequence of events is consistent with the
+time series shown in Figure \ref{fig:clearsky_polaris}.
+
+The primary drawback of using Polaris is that it provides an
+indication of viewing conditions at only a single point.  By using
+more stars it would be possible to obtain a full sky measure of
+visibility.  This of course requires a sufficiently accurate
+knowledge of camera orientation and optics to track stars over the
+course of a night.  It is also necessary to use only stars that
+are visible over the entire evening, or somehow account for their
+rising and setting.
+
+\begin{figure}[htb!]
+  \includegraphics[width=0.95\columnwidth]{../fig/clearsky_bigdipper}
+    \caption[Clear sky estimates using Ursa Major]
+   {Background brightness and excess counts due to
+   Ursa Major.
+     \label{fig:clearsky_bigdipper}  }
+\end{figure}
+
+A test of feasibility was carried out with the ``Big Dipper''
+(Ursa Major). Frames from the night of 2001/12/23 were projected
+onto a GEI grid with the average shown in figure
+\ref{fig:bigdipper}. Star brightness was estimated by adding all
+values within $2^\circ$ of the nominal star position. Background
+was determined from regions outside these boundaries. Results are
+shown in Figure \ref{fig:clearsky_bigdipper}, and are clearly
+similar to those in figure \ref{fig:clearsky_polaris}. However,
+using the Big Dipper provides an indication of viewing conditions
+over a much larger area ($16^\circ \times 16^\circ$) with enhanced
+signal-to-noise due to the larger number of sources. Increased
+spatial coverage could be obtained by increasing the number of
+target stars.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Summary}
+%
+This report contains all the information required to project ASI
+frames into celestial coordinates.  When combined with a measure
+of fit quality, this allows orientation and other instrument
+characteristics to be determined with a minimum of human
+intervention.  Estimates of viewing conditions can also be
+obtained automatically.
+
+\begin{figure}[htb!]
+  \includegraphics[width=0.95\columnwidth]{../fig/composite_skymap.jpg.eps}
+   \caption{Composite image of the northern celestial sphere using parameters from Table
+   \ref{tab:initial_values}.
+     \label{fig:composite_skymap}  }
+\end{figure}
+
+ \subsection{Suggested Implementation}
+Preliminary estimates of instrument parameters should be obtained
+from visual examination of single star frames in combination with
+{\it a priori} knowledge.  Results should be confirmed with an
+exhaustive monte-carlo search throughout a wide region of
+parameter space.  Next, systematic searching would be used to
+determine optimal parameters.  This should be repeated using
+several different initial conditions in order to avoid local
+minima.  Finally, large scale composite star maps should be
+created to verify the global quality of fit.  Figure
+\ref{fig:composite_skymap} contains an example of such a global
+fit based on the parameters in Table \ref{tab:monte_values}.
+Quality of focus is fairly good in most regions of the sky, but
+stars near the horizon are slightly smeared.  Some improvement is
+clearly possible.
+
+% \subsection{Future Improvements}
+
+
+\newpage
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Additional Information}
+
+ \subsection{Jupiter}
+
+ \tiny
+ \verbatiminput{gillam_jupiter_ephemeris.txt}
+ \normalsize
+
+ \subsection{Bright Stars}
+
+ \begin{table}[htb!]
+   \begin{center}
+   \fontfamily{cmsf} \fontsize{8}{8} \selectfont
+   \input{brightstars.tex}
+   \normalsize
+   \end{center}
+ \caption{Sources from the Yale Bright Star Catalog with visual magnitudes
+          less than 2.5, sorted by declination.  Particularly bright sources
+          are marked with gray shading.  Sources with declinations less than
+          $-20^\circ$ are not included.}
+ \end{table}
+\newpage
+
+
+  \begin{landscape}
+ \subsection{IDL Code} \label{sec:idl_code}
+  \fontfamily{cmtt} \fontsize{6}{5} \selectfont
+  \setlength{\columnseprule}{0.4pt}
+  \begin{multicols}{2}
+  {\large \bf asi\_map\_init.pro}
+   \verbatiminput{../idl/asi_map_init.pro}
+  \end{multicols}
+  \normalsize
+  \end{landscape}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\nocite{*}
+
+\newpage
+\bibliography{asi_map}
+
+\end{document}
