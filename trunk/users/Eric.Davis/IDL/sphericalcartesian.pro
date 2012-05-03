@@ -26,10 +26,10 @@ result= cartesian(f,g,h)
 
 result2= spherical(result)
 
-if (result2(0)-f) lt 1e-99 then print, "x =",result2(0) else print, "Something went wrong, here are the initial and final r values", f, result2(0)
+if (result2(0)-f) lt 1e-10 then print, "r =",result2(0) else print, "Something went wrong, here are the initial and final r values", f, result2(0)
 
-if (result2(1)-g) lt 1e-10 then print, "y =",result2(1) else print, "Something went wrong, here are the initial and final phi values:", g, result2(1)
+if (result2(1)-g) lt 1e-10 then print, "phi =",result2(1), " radians" else print, "Something went wrong, here are the initial and final phi values:", g, result2(1)
 
-if (result2(2)-h) lt 1e-10 then print, "z =",result2(2) else print, "Something went wrong, here are the initial and final theta values:", h, result2(2)
+if (result2(2)-h) lt 1e-10 then print, "theta =",result2(2), " radians" else print, "Something went wrong, here are the initial and final theta values:", h, result2(2)
 
 end
