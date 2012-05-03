@@ -1,8 +1,9 @@
 function spherical,x,y,z
   r= double((x^2+y^2+z^2)^(0.5))
-  phi = double(atan(y/x))
-  theta= double(acos(z/r))
- return, [double(r),double(phi),double(theta)]
+  phi = double(atan(y,x))
+  theta= double(acos((z/r)))
+  print, "r =",r,"     phi =",phi, "     theta =", theta
+ return, [r,phi,theta]
 end
 
 
@@ -13,13 +14,13 @@ theta=a(2)
 x= double(r*cos(phi)*sin(theta))
 y= double(r*sin(phi)*sin(theta))
 z= double(r*cos(theta))
-return, [double(x),double(y),double(z)]
+return, [x,y,z]
 end
 
 
-f= double(randomu(seeds))
-g= double(randomu(seeds))
-h= double(randomu(seeds))
+f= double(randomn(seeds))
+g= double(randomn(seeds))
+h= double(randomn(seeds))
 
 
 result= spherical(f,g,h)
