@@ -1,0 +1,296 @@
+\documentclass[11pt,twoside]{article}   % pre-print version
+
+\usepackage[active]{srcltx} % SRC Specials: DVI [Inverse] Search
+\usepackage[dvips]{graphicx} % for including figures
+\usepackage[dvips]{color}
+\usepackage[square]{natbib}  % AGU style references
+
+\usepackage{verbatim}   %to include other text files and source code listings
+\usepackage{fancyhdr}   %to play with top of page headers
+\usepackage{lastpage}   %to allow "page 1 of N"
+\usepackage{longtable}  %for tables that span multiple pages
+\usepackage{sectsty}    %to modify section headings
+%\usepackage{newcent}    %use this to get different looking output
+\usepackage{times}    %use this to get different looking output
+\usepackage{fancybox}
+\usepackage{multicol}
+\usepackage{colortbl}
+\usepackage{lscape}  % to allow switching between portrait and landscape
+\usepackage{amsfonts}
+%\usepackage{sublabel}
+
+% Make a larger page (shrink the margins)
+%
+ \setlength{\textwidth}{6.0in}
+ \setlength{\textheight}{8.5in}
+ \setlength{\oddsidemargin}{0.5in}
+ \setlength{\evensidemargin}{0.5in}
+ \setlength{\voffset}{-0.5in}
+% \setlength{\topskip}{0.5in}
+% \setlength{\footskip}{1.5in}
+
+% The  sectsty  package lets us play games with the section headings
+ %\allsectionsfont{\sffamily\noindent\shadowbox}
+ %\sectionfont{\sffamily\noindent\ovalbox}  % got carried away here
+% \allsectionsfont{\color[gray]{0.9}\sffamily\noindent\shadowbox}
+  \allsectionsfont{\color[gray]{0.2}\sffamily\noindent\colorbox[gray]{0.9}}
+
+ \pagestyle{fancy}
+ \lfoot{\today}
+ \cfoot{}
+ \rfoot{\thepage\ of \pageref{LastPage}}
+ \renewcommand{\headrulewidth}{0.4pt}
+ \renewcommand{\footrulewidth}{0.4pt}
+
+ \newcommand{\note}[1]{\marginpar{\small #1}}
+ \setlength{\columnseprule}{.4pt}
+
+% Use this to have section numbers in left margin.
+%
+ \makeatletter
+ \def\@seccntformat#1{\protect\makebox[0pt][r]{\csname the#1\endcsname\quad}}
+ \makeatother
+
+\begin{document}
+
+\begin{center}
+\section*{\quad Auroral studies by starlight\quad }
+
+% \footnotetext{An alternate title might be ``Auroral studies by starlight''}
+
+ \parbox{4in}{\centering
+     Brian Jackel, Trond Trondsen, and Eric Donovan \\[2ex]
+     \it University of Calgary \\
+     Institute for Space Research }
+\end{center}
+
+\begin{multicols}{2}
+Stars and the aurora have almost nothing in common, except that
+both can be seen in the clear night sky. While stars remain steady
+and fixed in the celestial sphere, the aurora flicker and dance,
+reflecting the dynamic interaction of the solar wind with the
+Earth's magnetic field.
+
+Aurora are often highly variable and quite bright relative to
+every celestial object except the sun and moon.  Consequently,
+professional astronomers see auroral light as just another source
+of noise to be avoided or removed. In turn, auroral scientists
+ %\footnote{Trond: I vaguely remember that you used stars to align PAI.
+ %However, I can't see a good way to work that in.}
+typically act as if stars don't even exist, as their contribution
+to most measurements is negligible.  However, a careful analysis
+of starlight provides information that can be used in the field of
+auroral research.
+
+At the University of Calgary Institute for Space Research we study
+the aurora in a variety of ways.  Satellites in space, rocket
+flights through the aurora, and observations from the ground each
+tell us something important about the cause of the aurora and its
+effect on the upper atmosphere.
+
+%\end{multicols}
+\begin{figure*}[htb!]
+% \centering
+  \includegraphics[width=1.95\columnwidth]{../fig/onenight}
+    \caption[A one hour sequence.]
+   {A one hour sequence with 59 background frames from Gillam,
+   Manitoba during 06-07 UT December 21, 2001.  Edge-enhancement has
+   been used to emphasize star tracks.
+   The Big Dipper is visible to the left of Polaris, which is
+   a single point source at pixel coordinates 122,67.
+   An overhead power line can be seen in the upper portion
+   of the frame, with a GPS antenna and light-shield in the lower left corner.
+     \label{fig:onenight}  }
+\end{figure*}
+%\begin{multicols}{2}
+
+Some of the earliest auroral observations were carried out using
+ground-based all-sky cameras.  As the name suggests, these took
+photographs of the aurora through a ``fish-eye'' lens in order to
+obtain pictures of the entire night sky.  This broad field of view
+is essential for studies of large scale auroral patterns.  Today
+we still use similar instruments updated with modern optics,
+filters, and detector technology.
+
+By far the most important advance for modern instruments is the
+use of cooled charge-coupled device (CCD) detectors instead of
+photographic film.  These not only provide enhanced sensitivity,
+but also allow images to be easily stored in digital format and
+processed in ways that were previously very difficult.
+
+Many of our cameras also have image intensifiers to allow
+operations at very low light levels.  This is important because we
+typically use narrow-band (2 nm) interference filters to isolate
+specific auroral wavelengths (e.g. 486.1, 557.7, and 630.0 nm).
+Each exposure thus contains a small fraction of the total auroral
+spectrum, but an even smaller amount of light due to other
+``background'' sources such as stars.
+
+A complete all-sky imager (ASI) system consists of a CCD camera,
+filter-wheel, image intensifier, and miscellaneous optics and
+electronics.  Our systems are controlled by PCs running Linux
+which acquire images according to a pre-set schedule. These allow
+operations to be automated so that data can be gathered at
+unattended field sites in the remote Arctic during the long winter
+nights.
+
+Modern ASIs are superb scientific instruments for auroral studies.
+They are, however, not very good telescopes.  All-sky lenses
+provide an unparalleled field of view, but have certain
+fundamental limitations.  It is difficult to achieve perfect focus
+everywhere in the image, and the best compromise settings cause
+point sources (such as stars) to be blurred by tens of
+arc-minutes. Even with ideal optics, mapping a $180^\circ$ field
+of view onto a $512{\times}512$ pixel CCD results in a resolution
+limit of approximately ${1 \over 3}^\circ$. Using megapixel CCDs
+might permit arc-minute resolution, but arc-seconds are definitely
+out of the question.
+
+Any particular star in the sky is thus imaged very poorly in each
+recorded image.  This is partially compensated for by the fact
+that \emph{every} celestial object above the horizon appears in
+\emph{each} image.  It is (at least in theory) possible to project
+each image into celestial coordinates by correcting for the
+effects of the Earth's rotation. A sequence of images from such a
+digitally despun telescope can be combined to produce a composite
+image of the entire night sky. Data can be merged from an hour, a
+night, or even an entire winter of observations to obtain very
+high contrast images.
+
+\begin{figure*}[htb!]
+  \includegraphics[width=1.95\columnwidth]{../fig/bigdipper_smeared_image.eps}
+    \caption[Poor quality composite image of the Big Dipper]
+   {A composite image of the Big Dipper produced from 150 1-second exposures
+   over a 7-hour interval, but using slightly erroneous pointing
+   information. Circles of $1^\circ$ radius are centered where stars
+   should be located.
+     \label{fig:bigdipper_smeared}  }
+\end{figure*}
+
+\begin{figure*}[htb!]
+  \includegraphics[width=1.95\columnwidth]{../fig/bigdipper_image.eps}
+    \caption[Poor quality composite image of the Big Dipper]
+   {As figure \ref{fig:bigdipper_smeared}, but using correct
+   pointing information.
+     \label{fig:bigdipper}  }
+\end{figure*}
+
+
+Projecting raw images into celestial coordinates requires accurate
+knowledge of camera optics and orientation.  This brings us to a
+crucial question: where are we looking? Ridiculous as this may
+sound to even a novice stargazer, it is a real problem for us. Our
+instruments are often installed at remote arctic sites under less
+than ideal conditions.  When standing on the top of an unsteady
+ladder it is difficult to ensure that a mounting frame is
+perfectly level, much less aligned to the proper azimuth.
+Fortunately, imperfect alignment is not really a problem, just so
+long as we can find out what the orientation errors actually are.
+It turns out that using stars as reference sources allows us to
+determine instrument orientation very precisely.
+
+For example, a poor estimate of instrument orientation might map
+CCD pixels onto a right-ascension/declination grid as shown in the
+first panel of figure \ref{fig:bigdipper_smeared}. Stars in the
+big dipper (Ursa Major) are clearly offset from their proper
+locations and smeared due to erroneous compensation for the
+Earth's rotation. Results from a better estimate of camera
+orientation are shown in figure \ref{fig:bigdipper}. Pointing
+accuracy in this case is clearly better than ${1\over 2}^\circ$.
+This would be considered poor for a typical narrow field
+telescope, but is quite good for an all-sky imager with a
+$180^\circ$ field of view, and more than sufficient for auroral
+research.
+
+The Big Dipper is an extremely useful feature for this kind of
+work because it contains several bright stars which are always
+visible in the Arctic night sky.  This constellation was known as
+Tukturjuit (caribou) to the Inuit people, who used it to determine
+the passage of time.  It is also interesting that Polaris is
+virtually useless for navigation in the Arctic, as it is close to
+the zenith and does not clearly indicate the direction of North.
+
+\begin{figure*}[htb!]
+  \includegraphics[width=1.90\columnwidth]{../fig/composite_skymap.jpg.eps}
+  \caption{Composite of the northern celestial
+  hemisphere constructed from nearly 1000 different all-sky images
+  obtained during a 12-hour interval.
+     \label{fig:composite_skymap}  }
+\end{figure*}
+
+Using the stars as celestial reference sources essentially solves
+the problem of unknown instrument alignment. A computer program
+can search through all possible orientations until it finds
+parameters which focus stars to their correct locations in
+celestial coordinates. Modern desktop computers can determine
+optimal results overnight. This is sufficiently fast considering
+that we only need to determine camera orientation once at each
+site when the instrument mounting frame is first installed.
+
+Correct camera orientation can be confirmed in some visually
+appealing ways.  For example, figure \ref{fig:composite_skymap}
+contains an image of the entire northern celestial hemisphere
+which is a composite of almost one thousand individual exposures
+gathered over nearly 24 hours. Stars in most regions are well
+``focused'', with exceptions due to limitations in our knowledge
+of certain optical characteristics of the instrument.  A composite
+image built up from several weeks of observations would show the
+apparent motion of the planets (such as Jupiter, which was the
+brightest feature in the sky at this time).
+
+%{\sf I want to emphasize the concept of a ``synthetic'' telescope
+%a bit, and could also talk about super resolution stuff.}
+
+Our ability to project all-sky images into celestial coordinates
+has uses beyond determining instrument orientation. Stars also
+provide luminosity standards which can be used for absolute
+calibration of instrument sensitivity.  Although we carry out
+extensive darkroom calibration, an independent confirmation using
+stellar sources is extremely valuable, as it allows us to monitor
+the performance of an auroral imager over years of operation in
+the field.
+
+Relative brightness also provides important information for
+estimating viewing conditions.  Our current image catalog contains
+more than a million images, and visual examination of each frame
+for clouds is not feasible. Certain empirical algorithms for
+automated image classification do exist, and are generally
+effective, but a more physically meaningful approach would be
+preferable.  This can be accomplished by first projecting images
+into celestial coordinates, and then using standard bright star
+catalogs to separate ``signal'' and ``background'' contributions.
+Clouds will tend to remove photons from stellar sources, while
+scattered light will appear more or less uniform across all
+regions. Consequently, automated determination of cloud cover can
+be obtained relatively easily by tracking the difference between
+signal and background estimates.
+
+%{\sf Figures need to be improved.  Pixel numbers on Figure 1 could
+%be removed and contrast improved.  Figure 3 would look better if a
+%full 24-hours were used.  Using two (or more) sites would increase
+%the gee-whiz factor, but maybe not worth the time.}
+
+Digital wizardry allows us to use auroral images in a variety of
+ways that were never part of our original plans.  It is not,
+however, clear whether any of this could play a useful role in
+real astronomical observations.  Our need for image transformation
+was a direct consequence of the extremely wide and fixed field of
+view of our instrument.  A much easier way to acquire high quality
+astronomical images would be to simply use a good quality narrow
+field telescope with tracking capabilities. Long exposure times
+could then be achieved without any computer assistance, and larger
+mosaics built up over time. Still, perhaps our experience will
+help inspire other new uses of CCD cameras in combination with
+digital image processing.  We have certainly enjoyed our brief
+excursion into the field of stellar cartography, continuing in the
+long tradition of looking to the sky for immutable (and beautiful)
+reference sources.
+
+{\bf About the authors:} Drs. Jackel, Trondsen, and Donovan study
+the aurora with optical and other techniques.  They are currently
+operating a network of all-sky imagers in the Canadian Arctic,
+more information can be found at {\small\tt
+http://www.phys.ucalgary.ca/NORSTAR}.
+
+\end{multicols}
+\end{document}

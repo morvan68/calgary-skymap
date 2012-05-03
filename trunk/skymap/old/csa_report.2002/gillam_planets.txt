@@ -1,0 +1,13 @@
+           Geocentric Configurations for 2001 Dec 23 AT  0 00 00 TDT
+                                            Position wrt Sun   (Moon Phase)
+ Object       RA         Dec       Dist      HA Diff   Elong     Mag  Dia   %Il
+             h  m  s     ø   '      AU          h  m       ø            "
+ JUPITER     6 51 37   +22 53.4    4.1977     +11 14   W 169    -2.7   47   100
+ VENUS      17 41 50   -23 25.2    1.6997     + 0 23   W   5    -3.9   10   100
+ SUN        18 05 18   -23 26.0     .9836
+ MERCURY    18 50 16   -25 06.0    1.3591     - 0 45   E  10     -.8    5    96
+ NEPTUNE    20 38 04   -18 22.9   30.8870     - 2 33   E  36     8.0    2   100
+ URANUS     21 38 39   -14 49.4   20.5937     - 3 33   E  51     5.9    3   100
+ MARS       22 48 35   - 8 31.7    1.4292     - 4 43   E  69      .7    7    88
+ MOON        0 17 54   - 3 47.7     .0027     - 6 13   E  91  (FIRST QTR)    51
+ SATURN      4 34 21   +20 07.7    8.1404     -10 29   E 159     -.3   20   100

@@ -1,0 +1,155 @@
+Ephemeris Generator at http://ssd.jpl.nasa.gov/cgi-bin/eph
+
+Ephemeris Settings
+
+      Target Body: Planet Jupiter
+Observer Location: User Specified Location
+      Coordinates: 265°21'00.0''E, 56°22'48.0''N, 100 m
+
+  From: A.D. 2001-12-23 00:00 UT
+    To: A.D. 2001-12-24 00:00   
+  Step: 1 hour
+Format: Calendar Date and Time
+
+Output Quantities: 1-2,4,9,13
+ Ref. Frame, RA/Dec Format: J2000, Degrees
+Apparent Coordinates Model: Refracted
+
+
+
+HORIZONS Generated Ephemeris
+
+*******************************************************************************
+Ephemeris / WWW_USER Thu May  2 13:28:23 2002  Pasadena, USA     / Horizons    
+*******************************************************************************
+Target body name: Jupiter (599)                   {source: JUP172}
+Center body name: Earth (399)                     {source: DE-0406LE-0406}
+Center-site name: (User Defined Site)
+*******************************************************************************
+Start time      : A.D. 2001-Dec-23 00:00:00.0000 UT      
+Stop  time      : A.D. 2001-Dec-24 00:00:00.0000 UT      
+Step-size       : 60 minutes
+*******************************************************************************
+Center geodetic : 265.350000, 56.380000,  0.10000 {E-lon(deg),Lat(deg),Alt(km)}
+Center cylindric: 265.35000,  3539.746,  5288.066 {E-lon(deg),Dxy(km),Dz(km)}
+Center pole/equ : Standard Earth Model            {East-longitude +}
+Center radii    : 6378.1 x 6378.1 x 6356.8 km     {Equator, meridian, pole}    
+Target pole/equ : IAU_JUPITER                     {East-longitude -}
+Target radii    : 71492.0 x 71492.0 x 66854.0 km  {Equator, meridian, pole}    
+Target primary  : Sun                             {source: DE-0406LE-0406}
+Interfering body: MOON (Req= 1737.400) km         {source: DE-0406LE-0406}
+Deflecting body : Sun, EARTH                      {source: DE-0406LE-0406}
+Deflecting GMs  : 1.3271E+11, 3.9860E+05 km^3/s^2                              
+Atmos refraction: YES (Earth refraction model)
+RA format       : DEG
+Time format     : CAL 
+Units conversion: 1 AU= 149597870.691 km, c= 299792.458 km/s, 1 day= 86400.0 s 
+Table cut-offs 1: Elevation (-90deg=NO ), Airmass (>38.0000=NO), Daylight (NO )
+Table cut-offs 2: Solar Elongation (  0.0,180.0=NO )                           
+*******************************************************************************************************
+ Date__(UT)__HR:MN     R.A._(J2000.0)_DEC. R.A._(r-appar)_DEC. Azi_(r-appr)_Elev  APmag  S-brt Ang-diam
+*******************************************************************************************************
+ 2001-Dec-23 00:00 Am  102.87442  22.89190 102.85492  22.96131  64.3035  10.6700  -2.71   5.34   46.966
+ 2001-Dec-23 01:00  m  102.86853  22.89252 102.86780  22.93046  76.1262  18.4603  -2.71   5.32   46.967
+ 2001-Dec-23 02:00  m  102.86260  22.89313 102.87165  22.91734  88.2070  26.6817  -2.71   5.34   46.968
+ 2001-Dec-23 03:00  m  102.85665  22.89375 102.87208  22.91072 101.1642  34.9599  -2.71   5.38   46.969
+ 2001-Dec-23 04:00  m  102.85068  22.89436 102.87086  22.90718 115.8477  42.8420  -2.71   5.38   46.970
+ 2001-Dec-23 05:00  m  102.84469  22.89496 102.86877  22.90537 133.3412  49.6934  -2.71   5.34   46.972
+ 2001-Dec-23 06:00  m  102.83869  22.89555 102.86622  22.90468 154.5632  54.6042  -2.71   5.31   46.973
+ 2001-Dec-23 07:00     102.83267  22.89614 102.86345  22.90485 178.9560  56.5217  -2.71   5.34   46.974
+ 2001-Dec-23 08:00     102.82666  22.89672 102.86067  22.90579 203.5046  54.8920  -2.71   5.38   46.975
+ 2001-Dec-23 09:00     102.82065  22.89729 102.85807  22.90758 225.0457  50.1921  -2.71   5.38   46.976
+ 2001-Dec-23 10:00     102.81465  22.89785 102.85591  22.91045 242.8240  43.4641  -2.71   5.34   46.977
+ 2001-Dec-23 11:00     102.80866  22.89841 102.85456  22.91498 257.6983  35.6410  -2.71   5.31   46.978
+ 2001-Dec-23 12:00     102.80269  22.89896 102.85476  22.92243 270.7636  27.3776  -2.71   5.34   46.979
+ 2001-Dec-23 13:00 A   102.79675  22.89951 102.85815  22.93593 282.8913  19.1377  -2.71   5.38   46.980
+ 2001-Dec-23 14:00 N   102.79083  22.90006 102.86975  22.96549 294.7167  11.2987  -2.71   5.38   46.981
+ 2001-Dec-23 15:00 *   102.78492  22.90061 102.91385  23.06217 306.6984   4.2532  -2.71   5.34   46.983
+ 2001-Dec-23 16:00 *   102.77904  22.90116 103.08706  23.49299 319.1498  -1.3803  -2.71   5.31   46.984
+ 2001-Dec-23 17:00 *   102.77318  22.90172 103.00150  23.51986 332.2281  -6.0722  -2.71   5.35   46.985
+ 2001-Dec-23 18:00 *   102.76732  22.90229 102.90141  23.53942 345.9023  -9.0472  -2.71   5.38   46.986
+ 2001-Dec-23 19:00 *m  102.76147  22.90287 102.79272  23.54700 359.9426 -10.0730  -2.71   5.38   46.987
+ 2001-Dec-23 20:00 *m  102.75562  22.90345 102.68401  23.54069  13.9844  -9.0625  -2.71   5.34   46.988
+ 2001-Dec-23 21:00 *m  102.74976  22.90405 102.58381  23.52236  27.6622  -6.1015  -2.71   5.31   46.989
+ 2001-Dec-23 22:00 Cm  102.74388  22.90465 102.49813  23.49669  40.7451  -1.4214  -2.71   5.35   46.990
+ 2001-Dec-23 23:00 Nm  102.73799  22.90526 102.67006  23.06827  53.2003   4.2046  -2.71   5.38   46.991
+ 2001-Dec-24 00:00 Am  102.73207  22.90587 102.71469  22.97162  65.1838  11.2424  -2.71   5.38   46.992
+*******************************************************************************************************
+Column meaning:
+ 
+TIME
+
+  Prior to 1972, times are UT1. Dates thereafter are UTC. Any 'b' symbol in
+the 1st-column denotes a B.C. date. First-column blank (" ") denotes an A.D.
+date. Calendar dates prior to 1582-Oct-15 are in the Julian calendar system.
+Later calendar dates are in the Gregorian system.
+
+  The uniform Coordinate Time scale is used internally. Conversion between
+CT and the selected non-uniform UT output scale has not been determined for
+UTC times after the next July or January 1st.  The last known leap-second
+is used over any future interval.
+
+  NOTE: "n.a." in output means quantity "not available" at the print-time.
+ 
+SOLAR PRESENCE
+  Time tag is followed by a blank, then a solar-presence symbol:
+
+        '*'  Daylight (refracted solar upper-limb on or above apparent horizon)
+        'C'  Civil twilight/dawn
+        'N'  Nautical twilight/dawn
+        'A'  Astronomical twilight/dawn
+        ' '  Night OR geocentric ephemeris
+
+LUNAR PRESENCE
+  The solar-presence symbol is immediately followed by a lunar-presence symbol:
+
+        'm'  Refracted upper-limb of Moon on or above apparent horizon
+        ' '  Refracted upper-limb of Moon below apparent horizon OR geocentric
+             ephemeris
+ 
+ R.A._(J2000.0)_DEC. =
+   J2000.0 astrometric right ascension and declination of target. Corrected
+for light-time. Units: DEGREES
+ 
+ R.A._(r-appar)_DEC. =
+   Refracted apparent right ascension and declination of the target with
+respect to the Earth's true-equator and the meridian containing the Earth's
+true equinox-of-date. Corrected for light-time, the gravitational deflection
+of light, stellar aberration, precession, nutation and approximate atmospheric
+refraction.  Units: DEGREES
+ 
+ Azi_(r-appr)_Elev =
+  Refracted apparent azimuth and elevation of target. Corrected for light-time,
+the gravitational deflection of light, stellar aberration, precession, nutation
+and approximate atmospheric refraction. Azimuth measured North(0) -> East(90)->
+South(180) -> West(270), elevation with respect to plane perpendicular to local
+zenith direction.  TOPOCENTRIC ONLY.  Units: DEGREES
+ 
+ APmag S-brt =
+   Target's approximate apparent visual magnitude & surface brightness. Planet
+& satellite values are available for Earth or Moon observing sites only. Values
+for the Sun, comets and asteroids ARE available for non-Earth sites.
+Units: NONE & VISUAL MAGNITUDES PER SQUARE ARCSECOND
+ 
+ Ang-diam =
+   The equatorial angular width of the target body full disk, if it were
+fully visible to the observer.  Units: ARCSECONDS
+
+
+ Computations by ...
+     Solar System Dynamics Group, Horizons On-Line Ephemeris System
+     4800 Oak Grove Drive, Jet Propulsion Laboratory
+     Pasadena, CA  91109   USA
+     Information: http://ssd.jpl.nasa.gov/
+     Connect    : telnet://ssd.jpl.nasa.gov:6775  (via browser)
+                  telnet ssd.jpl.nasa.gov 6775    (via command-line)
+     Author     : Jon.Giorgini@jpl.nasa.gov
+
+*******************************************************************************************************
+
+
+       Credits/Awards 
+
+    Contact: Webmaster (webmaster@ssd.jpl.nasa.gov) 
+
+Last modified: 2001 November 6 16:20 
