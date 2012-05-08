@@ -2,7 +2,7 @@
 
 ;+
 ; Superclass that inherits IDL_OBJECT for operator overloading; also provides some utility methods.  
-; Could also be used to factor out shared code from SKYMAP_TIME and SKYMAP_VECTOR superclasses.
+; Can also be used to factor out shared code from SKYMAP_TIME and SKYMAP_VECTOR superclasses.
 ;
 ; Examples:
 ;  
@@ -16,14 +16,17 @@
 ;   y= x.copy()                  ;# cloning (of simple objects only)
 ;-
 
+; To do:
+;   - think about adding "assert" method to simplify self-tests
 
-;# IDL defines this implicitly, but we want to also "pass through" ie. if input is valid object, just return it 
+;# IDL defines this implicitly, but we want to also "pass through": if input is valid object, just return it. 
 FUNCTION SKYMAP_OBJECT,value,NO_COPY=no_copy,_EXTRA=_extra
   classname= 'SKYMAP_OBJECT'  &  siz= SIZE(value,/STRUCT)
   IF (siz.type_name EQ 'OBJREF') && (OBJ_CLASS(value) EQ classname) THEN $
     IF KEYWORD_SET(NO_COPY) THEN RETURN,value ELSE RETURN,value.copy()
   RETURN,OBJ_NEW(classname,value,_EXTRA=_extra)
 END ;#----------------------------------------------------------------------------
+
 
 ;# called only by OBJ_NEW
 FUNCTION SKYMAP_OBJECT::INIT,value,_EXTRA=_extra
@@ -33,29 +36,12 @@ FUNCTION SKYMAP_OBJECT::INIT,value,_EXTRA=_extra
   RETURN,1
 END ;#----------------------------------------------------------------------------
 
+
 ;# called only by OBJ_DESTROY
 PRO SKYMAP_OBJECT::CLEANUP
   COMPILE_OPT HIDDEN        ;# don't clutter user visible namespace
 RETURN
 END ;#----------------------------------------------------------------------------
-
-
-;FUNCTION SKYMAP2_TIME::N_ELEMENTS
-;  RETURN,self.n_elements
-;END ;#----------------------------------------------------------------------------
-;
-;FUNCTION SKYMAP2_TIME::DIMENSIONS,NO_ZERO=no_zero
-;  result=self.dimensions 
-;  IF KEYWORD_SET(NO_ZERO) THEN result=result[WHERE(result NE 0)]
-;  RETURN,result
-;END ;#----------------------------------------------------------------------------
-;
-;;# called only by SIZE() and N_ELEMENTS()
-;FUNCTION SKYMAP2_TIME::_overloadSize
-;  COMPILE_OPT HIDDEN        ;# don't clutter user visible namespace
-;  IF NOT PTR_VALID(self.vector) THEN RETURN,-1L ELSE $
-;  RETURN,self.dimensions(/NO_ZERO)
-;END ;#----------------------------------------------------------------------------
 
 
 ;# was overloadHelp, but that complicates debugging
@@ -68,7 +54,7 @@ FUNCTION SKYMAP_OBJECT::_overloadPrint,_EXTRA=_extra
 END ;#----------------------------------------------------------------------------
 
 
-;# Violate object principles by allowing access to internal state 
+;# Violate object principles by allowing access to internal state... 
 ;#
 FUNCTION SKYMAP_OBJECT::GET_INTERNAL,HASHTYPE=hashtype,LISTTYPE=listtype
   COMPILE_OPT IDL2,HIDDEN        ;# don't clutter user visible namespace
@@ -90,7 +76,7 @@ FUNCTION SKYMAP_OBJECT::GET_INTERNAL,HASHTYPE=hashtype,LISTTYPE=listtype
 END ;#----------------------------------------------------------------------------
 
 
-;# Violate object principles by allowing access to internal state 
+;# Violate object principles by allowing access to internal state... 
 ;#
 PRO SKYMAP_OBJECT::SET_INTERNAL,value,ERROR_FLAG=error_flag,_EXTRA=_extra
   COMPILE_OPT HIDDEN        ;# don't clutter user visible namespace
@@ -139,6 +125,7 @@ FUNCTION SKYMAP_OBJECT::COPY,object,SKIP=skip
   RETURN,result
 END ;#----------------------------------------------------------------------------
 
+
 ;# Use this to control debugging and error reporting
 ;#
 FUNCTION SKYMAP_OBJECT::VERBOSE,level
@@ -147,25 +134,13 @@ FUNCTION SKYMAP_OBJECT::VERBOSE,level
 END ;#----------------------------------------------------------------------------
 
 
-;;# for use in "catch" blocks  !! DEPRECATED !! use ::catch"
-;FUNCTION SKYMAP_OBJECT::CATCH_ERROR,flag,NO_CANCEL=no_cancel
-;  IF (flag EQ 0) THEN RETURN,0  ;# no problem
-;  IF NOT KEYWORD_SET(NO_CANCEL) THEN CATCH,/CANCEL
-;  stack= SCOPE_TRACEBACK(/STRUCTURE)
-;  ;MESSAGE,+!ERROR_STATE.MSG,/INFORMATIONAL
-;  PRINT,stack[-1].routine+'  '+!ERROR_STATE.MSG
-;  FOR indx=N_ELEMENTS(stack)-2,0,-1 DO PRINT,stack[indx].routine+STRCOMPRESS(' line '+STRING(stack[indx].line,FORMAT='(I)'))
-;  RETURN,1
-;END ;#----------------------------------------------------------------------------
-
-
 ;# for use in "catch" blocks
 FUNCTION SKYMAP_OBJECT::CATCH,flag,NO_CANCEL=no_cancel
   IF (flag EQ 0) THEN RETURN,0  ;# no problem
   IF NOT KEYWORD_SET(NO_CANCEL) THEN CATCH,/CANCEL
+  PRINT,!ERROR_STATE.MSG  
   stack= SCOPE_TRACEBACK(/STRUCTURE)
   ;PRINT,stack[-1].routine+'  '+ STRJOIN((STRSPLIT(!ERROR_STATE.MSG,/EXTRACT))[1:*],' ')
-  PRINT,!ERROR_STATE.MSG
   IF (self.verbose GT 0) THEN FOR indx=N_ELEMENTS(stack)-1,0,-1 DO $
     PRINT,'-'+stack[indx].routine+STRCOMPRESS(' (line '+STRING(stack[indx].line,FORMAT='(I,")")'))
   RETURN,1
@@ -181,6 +156,7 @@ FUNCTION SKYMAP_OBJECT::PATH,subdir,CWD=cwd
   IF (N_PARAMS() GT 0) THEN FOREACH part,subdir DO path= path + PATH_SEP() + part 
   RETURN,path
 END ;#----------------------------------------------------------------------------
+
 
 ;# Goal is to test each method under a range of inputs.
 ;# !!RUN THIS AFTER ANY CODE CHANGE!!
@@ -208,17 +184,16 @@ FUNCTION SKYMAP_OBJECT::SELFTEST
   self.set_internal,{verbose:3},ERROR=err  &  fail= err OR (self.verbose NE 3)
   PRINT,flag[fail] + note  &  nfail += fail  &  ntest += 1
 
-  ;void= self.debug(0)  &  stop
   self.verbose=0
-  note= 'Test ->catch_error method'
+  note= '->catch(0) method'
   x= self->catch(0)  &  fail= x NE 0
   PRINT,flag[fail] + note  &  nfail += fail  &  ntest += 1
 
-  note= 'Test ->catch_error method'
+  note= '->catch(1) method'
   x= self->catch(1)  &  fail= x EQ 0
   PRINT,flag[fail] + note  &  nfail += fail  &  ntest += 1
 
-  note= 'Test ->path method'
+  note= '->path method'
   path= self.path('idl')  &  fail= FILE_SEARCH(path,'skymap_object__define.pro') EQ ''
   PRINT,flag[fail] + note  &  nfail += fail  &  ntest += 1
 
@@ -252,6 +227,6 @@ END ;#--------------------------------------------------------------------------
 
 ;To Do -add more self tests
 a= SKYMAP_OBJECT()
-void= a.debug(0)  &  print,void
+void= a.verbose(0)  ;&  print,void
 PRINT,a.selftest()
 END
