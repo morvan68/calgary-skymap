@@ -1,14 +1,10 @@
 #summary Action items and future plans
 
 = License review =
-
 I picked the GPL3 license almost at random.  Someone should google around ie.
-
  *http://google-opensource.blogspot.ca/2008/05/standing-against-license-proliferation.html
  *http://stackoverflow.com/questions/1082101/which-google-code-license-should-i-use
-
 and see if one of the other options is better
-
  * Apache License 2.0
  * Artistic License/GPL
  * Eclipse Public License 1.0
@@ -38,7 +34,33 @@ Use inheritance to create a more complex object.  Add a "units" field (string) a
 Review the code in [http://code.google.com/p/calgary-skymap/source/browse/trunk/skymap/idl/skymap_vector__define.pro skymap_vector__define], focusing on the "selftest" method.
 
 === Euler angles ===
-A generic rotation can be expressed in terms of three Euler angles for three successive rotations about the z,x',z' axes.  This can be collapsed into a single 3x3 matrix eg. Goldstein equation 4-46.
+A generic rotation can be expressed in terms of three Euler angles for three successive rotations about the z,x',z' axes.  This can be collapsed into a single 3x3 matrix eg. Goldstein equation 4-46.  Write IDL code to do rotations with the single matrix and compare to my 3-step implementation.  Is it faster?
+
+Also read Goldstein appendix B and google "gimbal lock".  Discuss...
 
 === rotation ===
 Take a look at the "rotation" method and read my [http://code.google.com/p/calgary-skymap/source/browse/trunk/users/Brian.Jackel/tex/notes.pdf notes].  Check my derivation, then test simple cases of rotations about x/y/z axes.  Then code up the general 3x3 matrix and compare it to my approach.  Is it faster?
+
+
+= Stellar calibration =
+An ideal optical system would allow us to determine exactly
+ * when each photon arrived
+ * how much energy it had (wavelength)
+ * the incident vector direction (orientation)
+
+In practice the measurements will be incomplete.  Not every photon will produce a count, with sensitivity that may depend on wavelength and direction.  Using a calibration source of known intensity we can determine the instrument response (transfer function).
+
+
+== Yale bright stars ==
+http://tdc-www.harvard.edu/catalogs/bsc5.html
+
+== SkyCalc ==
+One source for selftests:
+http://www.dartmouth.edu/~physics/faculty/skycalc/flyer.html
+
+== Miscellaneous ==
+http://www.optics.arizona.edu/palmer/rpfaq/rpfaq.htm
+http://www.coe.montana.edu/ee/jshaw/classes/EOSystems/F09/ClassResources/EE482_F09_RadiometryOverview_2pp.pdf
+http://www.stsci.edu/hst/observatory/documents/isrs/scs8.rev.pdf
+http://arxiv.org/ftp/astro-ph/papers/0604/0604339.pdf
+http://www.am.ub.edu/~carrasco/documentsgaia/GAIA-C5-TN-UB-JMC-001-2.pdf
