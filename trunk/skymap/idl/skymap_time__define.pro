@@ -1,7 +1,7 @@
 ;#  Subversion $Id: skymap_time__define.pro 190 2010-12-12 02:20:57Z bjackel $
 ;+
-; Store and convert time value(s).  Gather together all(?) IDL time conversion
-; tools.
+; Store and convert time value(s).  Gather together all(?) IDL time conversion tools.
+; 
 ;
 ; Examples:
 ;  
@@ -17,7 +17,7 @@
 ;#        selftest multiple dimensions
 ;#        selftest overloads
 
-;# IDL defines this implicitly, but we want to also "pass through" ie. if input is valid object, just return it 
+;# IDL defines this implicitly, but we want to also "pass through": if input is valid object, just return it. 
 FUNCTION SKYMAP_TIME,value,ERROR_FLAG=error_flag,COPY=copy,_EXTRA=_extra
   classname= 'SKYMAP_TIME'  &  siz= SIZE(value,/STRUCT)
 ;  IF (siz.type EQ 11) && (OBJ_CLASS(value) EQ classname) THEN RETURN,value
@@ -28,6 +28,7 @@ FUNCTION SKYMAP_TIME,value,ERROR_FLAG=error_flag,COPY=copy,_EXTRA=_extra
   result= OBJ_NEW(classname,value,_EXTRA=_extra)  &  error_flag= ~OBJ_VALID(result)
 RETURN,result
 END
+
 
 ;# called only by OBJ_NEW
 FUNCTION SKYMAP_TIME::INIT,value,_EXTRA=_extra

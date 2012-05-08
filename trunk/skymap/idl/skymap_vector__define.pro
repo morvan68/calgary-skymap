@@ -1,6 +1,6 @@
 ;# Subversion $Id: file rev date time user $
 
-;
+;;+
 ;
 ;
 ; Examples:
@@ -12,6 +12,7 @@
 ;   IF NOT OBJ_VALID(v) THEN MESSAGE,'Error- "v" is not a valid vector'
 ;
 ;   u= SKYMAP_VECTOR(v,/COPY)         ;# if vector then copy, otherwise create
+;-
 
 ;# why Nx3 is good?
 ;IDL> help,fltarr(3,3)#[1,2,3]
@@ -24,7 +25,7 @@
 ;#  -further strict input error checking
 
 
-;# IDL defines this implicitly, but we want to also "pass through" ie. if input is valid object, just return it 
+;# IDL defines this implicitly, but we want to also "pass through": if input is valid object, just return it. 
 FUNCTION SKYMAP_VECTOR,value,ERROR_FLAG=error_flag,COPY=copy,_EXTRA=_extra
   error_flag=1
   siz= SIZE(value,/STRUCT)
@@ -247,16 +248,6 @@ FUNCTION SKYMAP_VECTOR::COPY  ;#,scalar_value,OVERWRITE=overwrite
 END ;#----------------------------------------------------------------------------
 
 
-;PRO SKYMAP_VECTOR::SCALAR_MULTIPLY,scalar_value ;,OVERWRITE=overwrite
-;  ns= N_ELEMENTS(scalar_value)  &  nv= self.n_elements 
-;  IF (ns EQ 1) THEN *self.vector *= scalar_value[0] ELSE IF (ns EQ nv) THEN BEGIN
-;    tmp= *self.vector  ;# is there a better way?
-;    FOR indx=0,2 DO tmp[0,indx]= tmp[*,indx] * scalar_value
-;    *self.vector= tmp
-;  ENDIF ELSE MESSAGE,'Error- input scalar value must be of length 1 or N'
-;END ;#----------------------------------------------------------------------------
-
-
 PRO SKYMAP_VECTOR::SCALAR_MULTIPLY,scalar_value,ERROR_FLAG=error_flag
   error_flag=1
   ns= N_ELEMENTS(scalar_value)  &  nv= self.n_elements
@@ -284,35 +275,6 @@ PRO SKYMAP_VECTOR::SCALAR_MULTIPLY,scalar_value,ERROR_FLAG=error_flag
 END ;#----------------------------------------------------------------------------
 
 
-;FUNCTION SKYMAP_VECTOR::SCALAR_MULTIPLY,scalar_value,OVERWRITE=overwrite
-;  ns= N_ELEMENTS(scalar_value)  &  nv= self.n_elements   &  vec= *self.vector
-;  
-;  IF NOT ((ns EQ nv) OR (ns EQ 1) OR (nv EQ 1)) THEN BEGIN
-;    MESSAGE,'Error- vector sizes must be identical, or one must have only a single element',/INFORM
-;    RETURN,!values.d_nan
-;  END  
-;  
-;  dim= self.dimensions
-;  IF (ns EQ 1) THEN result= vec * scalar_value[0] ELSE $
-;  IF (nv EQ 1) THEN BEGIN
-;    result= DBLARR(ns,3)  &  dim= [ns,0,0,0,0,0,0,0]
-;    FOR indx=0,2 DO result[0,indx]= (vec[*,indx])[0] * scalar_value
-;  ENDIF ELSE IF (ns EQ nv) THEN BEGIN
-;    result= DBLARR(ns,3)
-;    FOR indx=0,2 DO result[0,indx]= vec[*,indx] * scalar_value
-;  ENDIF ELSE MESSAGE,'Error- input scalar value must be of length 1 or N'
-;
-;  IF KEYWORD_SET(OVERWRITE) THEN BEGIN
-;    *self.vector= result
-;    self.n_elements= ns>nv
-;    result= self 
-;  ENDIF ELSE result= SKYMAP_VECTOR(result)
-;  result.reform,dim  
-;  
-;  RETURN,result
-;END ;#----------------------------------------------------------------------------
-
-
 PRO SKYMAP_VECTOR::MATRIX_MULTIPLY,matrix3x3,ERROR_FLAG=error_flag
   ON_ERROR,2  &  error_flag=1
   CATCH,status  &  IF (self->skymap_object::catch(status)) THEN RETURN
@@ -323,18 +285,6 @@ PRO SKYMAP_VECTOR::MATRIX_MULTIPLY,matrix3x3,ERROR_FLAG=error_flag
   error_flag=0
 RETURN
 END ;#----------------------------------------------------------------------------
-
-
-;FUNCTION SKYMAP_VECTOR::MATRIX_MULTIPLY,matrix3x3,OVERWRITE=overwrite
-;  siz= SIZE(matrix3x3,/STRUCTURE)  ;# could also check that det=1 or orthogonal
-;  IF TOTAL(siz.dimensions NE [3,3,0,0,0,0,0,0]) THEN MESSAGE,'Error: input must be 3x3 rotation matrix'
-;  result = matrix3x3 ## TEMPORARY(*self.vector)
-;  IF KEYWORD_SET(OVERWRITE) THEN BEGIN
-;    *self.vector= result
-;    result= self 
-;  ENDIF ELSE result= OBJ_NEW(OBJ_CLASS(self),result)
-;RETURN,result
-;END ;#----------------------------------------------------------------------------
 
 
 FUNCTION SKYMAP_VECTOR::DOT_PRODUCT,value,ANGLE=angle,DEGREES=degrees
@@ -414,60 +364,6 @@ PRO SKYMAP_VECTOR::CROSS_PRODUCT,vector,ERROR_FLAG=error_flag
 END ;#----------------------------------------------------------------------------
 
 
-
-;FUNCTION SKYMAP_VECTOR::CROSS_PRODUCT,vector,OVERWRITE=overwrite
-;
-;  tmp= SKYMAP_VECTOR(vector)
-;  IF NOT OBJ_VALID(tmp) THEN BEGIN
-;    MESSAGE,'Error- input value must be valid vector (Nx3)',/INFORM
-;    RETURN,!values.d_nan
-;  ENDIF  
-;  
-;  n1= self.n_elements  &  n2= tmp->n_elements() ;N_ELEMENTS(tmp)
-;  IF NOT ((n1 EQ n2) OR (n1 EQ 1) OR (n2 EQ 1)) THEN BEGIN
-;    MESSAGE,'Error- vector sizes must be identical, or one must have only a single element',/INFORM
-;    RETURN,!values.d_nan
-;  END
-;  
-;  vec1= *self.vector  &  vec2= *(tmp->get(/POINTER))  &  vec3= DBLARR(n1>n2,3)
-;
-;  IF (n1 EQ n2) THEN BEGIN
-;    vec3[0,0]=  vec1[*,1]*vec2[*,2] - vec1[*,2]*vec2[*,1]
-;    vec3[0,1]= -vec1[*,0]*vec2[*,2] + vec1[*,2]*vec2[*,0]
-;    vec3[0,2]=  vec1[*,0]*vec2[*,1] - vec1[*,1]*vec2[*,0] 
-;    dimensions= self.dimensions(/NO_ZERO) 
-;  ENDIF ELSE IF (n2 EQ 1) THEN BEGIN
-;    vec3[0,0]=  vec1[*,1]*vec2[2] - vec1[*,2]*vec2[1]
-;    vec3[0,1]= -vec1[*,0]*vec2[2] + vec1[*,2]*vec2[0]
-;    vec3[0,2]=  vec1[*,0]*vec2[1] - vec1[*,1]*vec2[0]   
-;    dimensions= self.dimensions(/NO_ZERO)
-;  ENDIF ELSE IF (n1 EQ 1) THEN BEGIN
-;    vec3[0,0]=  vec1[1]*vec2[*,2] - vec1[2]*vec2[*,1]
-;    vec3[0,1]= -vec1[0]*vec2[*,2] + vec1[2]*vec2[*,0]
-;    vec3[0,2]=  vec1[0]*vec2[*,1] - vec1[1]*vec2[*,0]   
-;    dimensions= tmp.dimensions(/NOZERO)
-;  ENDIF
-;;  vec3= REFORM(vec3,[dimensions,3])
-;
-;;  nn1= n1-1  &  nn2= n2-1
-;;  FOR indx=0,(nn1>nn2) DO BEGIN
-;;    vec3[indx,0]= vec1[indx<nn1,1]*vec2[indx<nn2,2] - vec1[indx<nn1,2]*vec2[indx<nn2,1]
-;;    vec3[indx,1]= -(vec1[indx<nn1,0]*vec2[indx<nn2,2] - vec1[indx<nn1,2]*vec2[indx<nn2,0])
-;;    vec3[indx,2]= vec1[indx<nn1,0]*vec2[indx<nn2,1] - vec1[indx<nn1,1]*vec2[indx<nn2,0]
-;;  ENDFOR
-;  
-;  IF KEYWORD_SET(OVERWRITE) THEN BEGIN
-;    *self.vector= vec3
-;    self.n_elements= n1>n2
-;    result= self 
-;  ENDIF ELSE result= OBJ_NEW(OBJ_CLASS(self),vec3)
-;  result.reform,dimensions
-;  
-;  RETURN,result 
-;END ;#----------------------------------------------------------------------------
-
-
-
 ;# Rotation around an arbitrary axis passing through the origin.
 ;# There is an alternative approach using a (fairly complicated) 3x3 rotation matrix,
 ;# but this is relatively straightforward and also exercises several utility functions.
@@ -497,39 +393,6 @@ PRO SKYMAP_VECTOR::ROTATION,rotation_angle,axis_vector,DEGREES=degrees,ERROR_FLA
   error_flag=0
   RETURN
 END ;#----------------------------------------------------------------------------
-
-
-;;# Rotation around an arbitrary axis passing through the origin.
-;;# There is an alternative approach using a (fairly complicated) 3x3 rotation matrix,
-;;# but this is relatively straightforward and also exercises several utility functions.
-;FUNCTION SKYMAP_VECTOR::ROTATION,rotation_angle,axis_vector,DEGREES=degrees,OVERWRITE=overwrite
-;  IF (N_PARAMS() LT 2) THEN MESSAGE,'Error- two input values required: rotation_angle and axis_vector"
-;  theta= rotation_angle  &  IF KEYWORD_SET(DEGREES) THEN theta= theta * !dtor  ;# !! check: non-empty, numeric, scalar?
-;
-;  n= SKYMAP_VECTOR(axis_vector)  &  IF NOT OBJ_VALID(n) THEN MESSAGE,'Error- input axis_vector must be valid vector'
-;  IF (n.n_elements() NE 1) THEN MESSAGE,'Error- input axis_vector must be a single vector'
-;  n= n.scalar_multiply(1.0/n.magnitude())   ;# normalize to unit vector
-;
-;  u= self.cross_product(n)           ;# gives vXn, want nXv ...
-;  u= u.scalar_multiply(-SIN(theta))  ;# ...so flip sign
-;
-;  dot= self.dot_product(n)      ;# v.n
-;  n= n.scalar_multiply(dot)     ;# now really v_parallel
-; 
-;  v= self.get(/NO_REFORM) - n.get(/NO_REFORM)  ;# v_perpendicular
-;  v= SKYMAP_VECTOR(v)
-;  v= v.scalar_multiply(COS(theta)-1.0)
-;  
-;  result = *self.vector + v.get() + u.get()  ;&  stop 
-;  u.set,result
-;
-;  IF KEYWORD_SET(OVERWRITE) THEN BEGIN  ;# need to check dimensions?
-;    *self.vector= result
-;    result= self 
-;  ENDIF ELSE result= u
-;
-;RETURN,result
-;END ;#----------------------------------------------------------------------------
 
 
 ;angle is rotation angle in radians 
@@ -575,6 +438,7 @@ END ;#--------------------------------------------------------------------------
 FUNCTION SKYMAP_VECTOR::EULER_MATRIX,alpha_angle,beta_angle,gamma_angle,DEGREES=degrees
   RETURN,self.rotation_matrix([alpha_angle,beta_angle,gamma_angle],['z','x','z'],DEGREES=degrees)
 END ;#----------------------------------------------------------------------------
+
 
 ;# Goal is to test each method under a range of inputs.
 ;# !!RUN THIS AFTER ANY CODE CHANGE!
