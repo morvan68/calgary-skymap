@@ -1,0 +1,44 @@
+#summary Action items and future plans
+
+= License review =
+
+I picked the GPL3 license almost at random.  Someone should google around ie.
+
+ *http://google-opensource.blogspot.ca/2008/05/standing-against-license-proliferation.html
+ *http://stackoverflow.com/questions/1082101/which-google-code-license-should-i-use
+
+and see if one of the other options is better
+
+ * Apache License 2.0
+ * Artistic License/GPL
+ * Eclipse Public License 1.0
+ * GNU GPL v2
+ * GNU GPL v3
+ * GNU lesser GPL
+ * MIT License
+ * Mozilla Public License 1.1
+ * New BSD License
+
+My goal is to make our work freely available to everyone, while not exposing ourselves to any legal jeopardy.  It would be ideal if other researchers would want to contribute to our project.  
+
+= IDL objects =
+
+== myInteger ==
+Create the simplest possible IDL object containing a single 16-bit integer.  Write the minimal set of methods: init, set, get, destroy.
+
+== myIntegerWithUnits ==
+Use inheritance to create a more complex object.  Add a "units" field (string) and make changes to allow
+{{{
+  obj->set,6.0,'metres'
+  help,obj->get(),/structure
+  struct {value:6.0, units:'metres'}
+}}}
+
+== skymap_vector ==
+Review the code in [http://code.google.com/p/calgary-skymap/source/browse/trunk/skymap/idl/skymap_vector__define.pro skymap_vector__define], focusing on the "selftest" method.
+
+=== Euler angles ===
+A generic rotation can be expressed in terms of three Euler angles for three successive rotations about the z,x',z' axes.  This can be collapsed into a single 3x3 matrix eg. Goldstein equation 4-46.
+
+=== rotation ===
+Take a look at the "rotation" method and read my [http://code.google.com/p/calgary-skymap/source/browse/trunk/users/Brian.Jackel/tex/notes.pdf notes].  Check my derivation, then test simple cases of rotations about x/y/z axes.  Then code up the general 3x3 matrix and compare it to my approach.  Is it faster?
