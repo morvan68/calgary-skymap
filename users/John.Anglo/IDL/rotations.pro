@@ -62,16 +62,41 @@ x=ve
 
 st = systime(1)
 for i = 0,999999L do begin
-  x=rotate_vector(x,[ax[0],ax[1],ax[2]],th[0],/degrees)
+  x=rotate_vector(x,[ax[0:2]],th[0],/degrees)
 endfor
-print, "vector: ",systime(1)-st
+st1 = systime(1)-st
+print, "vector: ",st1
 
 x=ve
 
 st = systime(1)
 for i = 0,999999L do begin
-  x=rotate_matrix(x,[ax[0],ax[1],ax[2]],th[0],/degrees)
+  x=rotate_matrix(x,ax[0:2],th[0],/degrees)
 endfor
-print, "matrix: ",systime(1)-st
+st2 = systime(1)-st
+print, "matrix: ",st2
 
+print, (st2-st1)/st2
+print, (st2-st1)/st1
+
+x=ve
+
+st = systime(1)
+for i = 0,999999L do begin
+  x=rotate_matrix(x,[ax[0:2]],th[0],/degrees)
+endfor
+st1 = systime(1)-st
+print, "vector: ",st1
+
+x=ve
+
+st = systime(1)
+for i = 0,999999L do begin
+  x=rotate_vector(x,ax[0:2],th[0],/degrees)
+endfor
+st2 = systime(1)-st
+print, "matrix: ",st2
+
+print, (st2-st1)/st2
+print, (st2-st1)/st1
 end

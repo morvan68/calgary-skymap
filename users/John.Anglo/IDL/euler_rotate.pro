@@ -43,11 +43,11 @@ end
 vec = skymap_vector([1,2,3])
 
 st=systime(1)
-for i=0,999999L do x=vec.euler_matrix(120,120,120,/degrees)
+for i=0,99999L do x=vec.euler_matrix(120,120,120,/degrees)
 print,systime(1)-st
 
 st=systime(1)
-for i=0,999999L do x=euler_rotate(120,120,120,/degrees)
+for i=0,99999L do x=euler_rotate(120,120,120,/degrees)
 print,systime(1)-st
 
 end
