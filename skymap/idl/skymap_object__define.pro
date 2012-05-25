@@ -134,7 +134,10 @@ FUNCTION SKYMAP_OBJECT::VERBOSE,level
 END ;#----------------------------------------------------------------------------
 
 
-;# for use in "catch" blocks
+;# for use in "catch" blocks eg.
+;#     ON_ERROR,2  &  error_flag= 1
+;#     CATCH,status & IF (self->skymap_object::catch(status)) THEN RETURN
+;#  
 FUNCTION SKYMAP_OBJECT::CATCH,flag,NO_CANCEL=no_cancel
   IF (flag EQ 0) THEN RETURN,0  ;# no problem
   IF NOT KEYWORD_SET(NO_CANCEL) THEN CATCH,/CANCEL
@@ -150,9 +153,9 @@ END ;#--------------------------------------------------------------------------
 
 ;# if IDL source files are in /path/foo/bar/skymap/idl, then the skymap root directory is /path/foo/bar/skymap
 FUNCTION SKYMAP_OBJECT::PATH,subdir,CWD=cwd
-  stack= SCOPE_TRACEBACK(/STRUCTURE)
-  caller= stack[-2]  &  fname= caller.filename
-  path= FILE_DIRNAME(FILE_DIRNAME(fname,/MARK_DIRECTORY))
+  callstack= SCOPE_TRACEBACK(/STRUCTURE)
+  caller= callstack[-2]  &  fname= caller.filename
+  path= FILE_DIRNAME(FILE_DIRNAME(callstack[-1].filename,/MARK_DIRECTORY))
   IF (N_PARAMS() GT 0) THEN FOREACH part,subdir DO path= path + PATH_SEP() + part 
   RETURN,path
 END ;#----------------------------------------------------------------------------
@@ -211,15 +214,20 @@ PRO SKYMAP_OBJECT__DEFINE
         ,verbose:0                    $
         ,inherits IDL_Object          $ ;# for operator overloading
         }
+ 
+  ;#
+  IF (!version.release LT 8.1) THEN $
+    MESSAGE,'Warning- IDL version should be 8.1 or greater, is: '+!version.release,/INFORM
+  
 
   ;# source file subdir should be in !PATH, if not add and complain
-  stack= SCOPE_TRACEBACK(/STRUCTURE)  &  caller= stack[-2]
-  path= FILE_DIRNAME(caller.filename,MARK_DIRECTORY=0)  &  pos= STRPOS(!PATH,path)
-  IF (pos EQ -1) THEN BEGIN
-    MESSAGE,'Warning- skymap subdir not in !PATH, appending: '+path,/INFORM
+  callstack= SCOPE_TRACEBACK(/STRUCTURE) ; &  caller= callstack[-2]
+  path= FILE_DIRNAME(callstack[-1].filename,MARK_DIRECTORY=0)  ;&  pos= STRPOS(!PATH,path)
+  IF (STRPOS(!PATH,path) EQ -1) THEN BEGIN
+    MESSAGE,'Warning- skymap_object not in !PATH, appending: '+path,/INFORM
     !PATH= !PATH + PATH_SEP(/SEARCH_PATH) + path
     PATH_CACHE,CLEAR=1,REBUILD=0  ;# lazy rebuild
-  ENDIF
+  ENDIF ;& stop
 
 RETURN
 END ;#----------------------------------------------------------------------------
