@@ -1,6 +1,6 @@
-;# Subversion $Id: file rev date time user $
+;# Subversion $Id$
 
-;;+
+;+
 ;
 ;
 ; Examples:
@@ -367,7 +367,7 @@ END ;#--------------------------------------------------------------------------
 ;# Rotation around an arbitrary axis passing through the origin.
 ;# There is an alternative approach using a (fairly complicated) 3x3 rotation matrix,
 ;# but this is relatively straightforward and also exercises several utility functions.
-PRO SKYMAP_VECTOR::ROTATION,rotation_angle,axis_vector,DEGREES=degrees,ERROR_FLAG=error_flag
+PRO SKYMAP_VECTOR::ROTATE,rotation_angle,axis_vector,DEGREES=degrees,ERROR_FLAG=error_flag
   ON_ERROR,3  &  error_flag=1
   
   IF (N_PARAMS() LT 2) THEN MESSAGE,'Error- two input values required: rotation_angle and axis_vector"
@@ -546,11 +546,12 @@ END ;#--------------------------------------------------------------------------
 
 
 
-;
-;x= skymap_vector([1,0,2])
 y= skymap_vector()
-;y= x.rotation(90,/degrees,[0,0,1]) & print,y
 print,y->selftest()
+
+;x= skymap_vector([1,0,2])
+;x.rotate,90,/degrees,[0,0,1] & print,x
+
 ;
 ;stop
 ; a= skymap_vector([[1,0,0],[0,1,0],[0,0,1]])

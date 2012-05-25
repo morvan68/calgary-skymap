@@ -240,17 +240,20 @@ FUNCTION SKYMAP_TIME::ISA_LEAPYEAR,year
 END ;#----------------------------------------------------------------------------
 
 
-FUNCTION SKYMAP_TIME::DAY_OF_WEEK
-  day_name=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']
+;# Day of week: 0=Monday to 6=Sunday
+FUNCTION SKYMAP_TIME::DAY_OF_WEEK,NAME=name
   e2000= 5 ;# t= skymap2_time([2000,1,1,0,0,0],/ymdhms) & PRINT,t.unix(/string) ;# Saturday
   result= (*self.time)/86400 + e2000     ;# seconds to days and shift epoch
-  result= (result MOD 7) + 7
-  result= day_name[result MOD 7]
+  result= (FIX(result MOD 7) + 7) MOD 7
+  IF KEYWORD_SET(NAME) THEN BEGIN
+    day_name=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']
+    result= day_name[result]
+  ENDIF
   RETURN,result 
 END ;#----------------------------------------------------------------------------
 
-
-FUNCTION SKYMAP_TIME::DAY_OF_YEAR  ;# zero based
+;# Day of year: 1= January 1st
+FUNCTION SKYMAP_TIME::DAY_OF_YEAR
   tmp= self.ymdhms() 
   tmp[1,*]=1 & tmp[2,*]=1 & tmp[3,*]=0 & tmp[4,*]=0 & tmp[5,*]=0
   tmp= SKYMAP_TIME(tmp,/YMDHMS) ;# January 1
@@ -399,7 +402,7 @@ END ;#--------------------------------------------------------------------------
  
  
 FUNCTION SKYMAP_TIME::COPY  ;#,scalar_value,OVERWRITE=overwrite 
-  RETURN,SKYMAP_TIME(self.get())
+  RETURN,SKYMAP_TIME(self.get(/Y2K),/Y2K)
 END ;#----------------------------------------------------------------------------
 
 
