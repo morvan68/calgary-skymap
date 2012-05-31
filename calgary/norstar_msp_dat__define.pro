@@ -1,16 +1,22 @@
 ;# Subversion $Id$
 ;# 10 Aug 2010: Brian Jackel wrote based on info provided by Greg Baker
-;# 28 May 2012: Bjj updated
+;# 28 May 2012: Bjj updated with iv4 format, made more robust
 
 ;+
 ; This IDL program reads data files produced by the NORSTAR 
 ; meridian scanning photometer (MSP) UDP packet stream.
 ; 
 ; Example:
-;  datadir= 'c:/data/norstar/msp/2012/05/01/'
-;  filelist= FILE_SEARCH(datadir,'*_GILL_iv[23].dat',COUNT=nfiles)
+;  datadir= 'c:/data/norstar/msp/2012/05/01/'  &  pattern='*_GILL_iv[234].dat' 
+;  filelist= FILE_SEARCH(datadir,pattern,COUNT=nfiles)
 ;  data= NORSTAR_MSP_DAT_READFILE(filelist[0])
 ;  plot,data[9999:9999+1999].counts[0]
+;
+;  data= NORSTAR_MSP_DAT_READFILE(filelist)
+;  dat= NORSTAR_MSP_DAT_RESHAPE(data,UNIX_SECONDS=time)
+;  dat= TRANSPOSE(SQRT(dat.counts[1]))
+;  SHADE_SURF,dat,SHADE=BYTSCL(dat),ax=90,az=0
+;
 ;-
 
 
@@ -146,9 +152,11 @@ FUNCTION NORSTAR_MSP_DAT_RESHAPE,record,UNIX_SECONDS=unix_seconds
   ENDFOR
   
   ; create a 2-D array and insert records
-  nscan= MAX(scan)  &  nstep= MAX(step)
-  result= REPLICATE(record[0],nstep,nscan) 
-  ;FOR indx=0,nrec-1 DO result[step[indx],scan[indx]]= record[indx]
+  nscan= MAX(scan)+1  &  nstep= MAX(step)+1
+  sname= TAG_NAMES(record[0],/STRUCTURE_NAME)
+  status= EXECUTE('struct={'+sname+'}')
+  result= REPLICATE(struct,nstep,nscan) 
+ ; FOR indx=0,nrec-1 DO result[step[indx],scan[indx]]= record[indx]
   result[step+scan*nstep]= record  ; faster than loop, but cryptic
   
   unix_seconds= MEDIAN(result.seconds,/DOUBLE,DIMENSION=1)  ; zenith time for each scan
@@ -193,7 +201,7 @@ FUNCTION NORSTAR_MSP_DAT_READFILE,filename,COUNT=n_records
   STRMATCH(fname,'*_ut??_*_iv3.dat'):record= {NORSTAR_MSP_DAT_IV3}
   STRMATCH(fname,'*_ut??_*_iv4.dat'):record= {NORSTAR_MSP_DAT_IV4}
   ELSE: BEGIN
-    MESSAGE,'Error- unrecognized file name: '+fname
+    MESSAGE,'Error- unrecognized file name: '+fname,/INFORMATIONAL
     RETURN,!NULL
     END
   ENDCASE
@@ -202,12 +210,15 @@ FUNCTION NORSTAR_MSP_DAT_READFILE,filename,COUNT=n_records
   filestat= FSTAT(lun)
   IF (filestat.size LT N_TAGS(record,/DATA_LENGTH)) THEN BEGIN
     MESSAGE,'Error- file too small: '+fname,/INFORMATIONAL
+    FREE_LUN,lun
     RETURN,record    
   ENDIF 
 
   READU,lun,record
   IF (NORSTAR_MSP_DAT_VALID(record) NE 0) THEN BEGIN
     MESSAGE,'Error- invalid initial record in file: '+fname,/INFORMATIONAL
+    stop
+    FREE_LUN,lun
     RETURN,record    
   ENDIF
   
@@ -224,6 +235,70 @@ FUNCTION NORSTAR_MSP_DAT_READFILE,filename,COUNT=n_records
 RETURN,data
 END
 
+;# some useful plots
+PRO NORSTAR_MSP_DAT_PLOT_FIGURES,HARDCOPY=hardcopy
+
+  ; create a multi-page postscript file in ./fig subdir
+  IF KEYWORD_SET(HARDCOPY) THEN BEGIN
+    _d= !d
+    SET_PLOT,'PS'
+    stack= SCOPE_TRACEBACK(/STRUCTURE)
+    pwd= FILE_DIRNAME(stack[-1].filename)
+    filename= STRJOIN([pwd,'fig','norstar_msp_dat_figures.ps'],PATH_SEP())
+    DEVICE,FILENAME=filename,PREVIEW=0,/LANDSCAPE
+    !p.font=0
+  ENDIF
+
+  datadir= 'c:/data/norstar/msp/2011/02/01/'  &  pattern= '*_GILL_iv[234].dat'
+  filelist= FILE_SEARCH(datadir,pattern,COUNT=nfiles)
+  data= NORSTAR_MSP_DAT_READFILE(filelist)
+  sitecode= STRING(data[0].sitecode)
+
+  time= data.seconds + data.microseconds*1d-6
+  title0= sitecode+'  '+SYSTIME(0,time[0],/UTC) 
+  dtime= time[1:*] - time
+  
+  blank= REPLICATE(' ',30)
+
+  ; two scans (60-seconds) showing the red channels (signal & background) and the mirror step index
+  t0= 25000  &  t= time-time[0]-t0  
+  title= sitecode+'  '+SYSTIME(0,time[0]+t0,/UTC)
+  PLOT,t,data.counts[7],PSYM=4,SYMSIZE=0.4,XRANGE=[0,60],YRANGE=[0,566] $
+     ,XTITLE='time [seconds]',YTITLE='red channel=0,7 [counts]',TITLE=title
+  OPLOT,t,data.counts[0],PSYM=1,SYMSIZE=0.4
+  OPLOT,t,data.mirror_step,THICK=2
+
+  ; all 8 channels at zenith(ish) over 24-hours
+  w= where(data.mirror_step EQ 272,nw)
+  d= data[w]  &  t= time[w]
+  PLOT,d.counts[1]>1,/YLOG,YRANGE=[3,65535],YSTYLE=1,/NODATA $
+     ,XTITLE='record number',YTITLE='zenith bin=272 channel=0-7 [counts]',TITLE=title0   
+  FOR indx=0,7 DO OPLOT,SMOOTH(d.counts[indx],3)
+
+  ; time difference between sucessive records over 1-hour to emphasize 0.5ms jitter
+  PLOT,time-time[0],dtime*1d3,YRANGE=50 + 1.0*[-1,+1],XRANGE=[0,3600] $
+     ,XTITLE='time [seconds]',YTITLE='delta-T [milliseconds]',TITLE=title0
+  
+  ; time difference between sucessive records over 1-minute to emphasize 0.005ms oscillation
+  PLOT,time-time[0],dtime*1d3,YRANGE=50 + 0.05*[-1,+1],XRANGE=[0,60],YSTYLE=1 $
+     ,XTITLE='time [seconds]',YTITLE='delta-T [milliseconds]',TITLE=title0
+
+  ; histogram of time differences (logarithmic with inset linear) 
+  hist= HISTOGRAM(dtime,BINSIZE=1d-6,MIN=0,MAX=60d-3)
+  PLOT,FINDGEN(60000)/1d3,hist>1,/YLOG,XRANGE=[49.3,50.7],XSTYLE=1  $
+     ,XTITLE='delta-T [milliseconds]',YTITLE='number of records',TITLE=title0     
+  PLOT,FINDGEN(60000)/1d3,hist/TOTAL(hist),XRANGE=[49.98,50.02],XSTYLE=1,POSITION=[0.6,0.6,0.925,0.9],/NOERASE,YTICKNAME=blank,PSYM=10
+
+  IF KEYWORD_SET(HARDCOPY) THEN BEGIN
+    DEVICE,/CLOSE_FILE
+    SET_PLOT,_d.name
+    !p.font=-1
+  ENDIF
+
+  RETURN
+END
+
+
 
 ;;# Generic read routine.  Currently just a wrapper
 ;;#
@@ -238,6 +313,63 @@ END
 PRO NORSTAR_MSP_DAT__DEFINE
   RETURN
 END
+
+;# Test readfile by running it on *all* data files.  Slow but effective.
+PRO NORSTAR_MSP_DAT_TEST_READ_ALL,datadir
+  datadir= 'c:\data\norstar\msp\'
+  yearlist= FILE_SEARCH(datadir+'????',/TEST_DIRECTORY,/MARK_DIRECTORY,COUNT=ndirs)  &  PRINT,ndirs
+  FOREACH yeardir,yearlist DO BEGIN
+    PRINT,yeardir
+    daylist= FILE_SEARCH(yeardir+'??\??',/TEST_DIRECTORY,/MARK_DIRECTORY,COUNT=ndirs)  &  PRINT,ndirs
+    FOREACH daydir,daylist DO BEGIN
+      PRINT,daydir
+      filelist= FILE_SEARCH(daydir+'*_ut??_*_iv[34].dat',/TEST_READ,COUNT=nfiles)  &  PRINT,nfiles
+      FOREACH filename,filelist DO data= NORSTAR_MSP_DAT_READFILE(filename,COUNT=nrec) 
+    ENDFOREACH
+  ENDFOREACH
+  RETURN
+END
+
+;C:\data\norstar\msp\2009\01\01\20090101_ut00_FSMI_iv2.dat
+;** Structure NORSTAR_MSP_DAT_IV2, 16 tags, length=68, data length=64:
+;   HEADER          BYTE      Array[2]  UC
+;   SITECODE        BYTE      Array[4]  FSMI
+;   VERSION         UINT             3  !!!
+;   NSTEPS          UINT           544
+;   DEVICE_ID       UINT             0
+;   PACKET_SIZE     UINT             1  !!!
+;   MODE            UINT            64  !!!
+;   STEP_TABLE_VERSION
+;                   UINT             0
+;   SECONDS         LONG         125829137
+;   MICROSECONDS    LONG       -1930540708
+;   MIRROR_STEP     UINT             0
+;   START_OF_DATA   UINT             0
+;   COUNTS          UINT      Array[8]  255     268     413    3329    3332    3514    3793    4436
+;   END_OF_DATA     UINT           193
+;   PADDING         BYTE      Array[14]  0 255   0 255   0 255   0 255   0 255   0 255   0 255
+;   TRAILER         BYTE      Array[2]   CU
+
+; C:\data\norstar\msp\2011\02\16\20110216_ut19_GILL_iv3.dat
+;** Structure NORSTAR_MSP_DAT_IV3, 17 tags, length=64, data length=64:
+;   HEADER          BYTE      Array[2] "te"
+;   SITECODE        BYTE      Array[4] "st\nt"
+;   VERSION         UINT         29541
+;   NSTEPS          UINT          2676
+;   NORTH_STEP      UINT         25972
+;   DEVICE_ID       UINT         29811
+;   PACKET_SIZE     UINT         29706
+;   MODE            UINT         29541
+;   STEP_TABLE_VERSION
+;                   UINT          2676
+;   SECONDS         LONG        1953719668
+;   MICROSECONDS    LONG        1936028682
+;   MIRROR_STEP     UINT          2676
+;   START_OF_DATA   UINT         25972
+;   COUNTS          UINT      Array[8]
+;   END_OF_DATA     UINT         16384
+;   PADDING         BYTE      Array[12]
+;   TRAILER         BYTE      Array[2]
 
 PRO TEST
  rec= {NORSTAR_MSP_DAT_IV2}
@@ -254,13 +386,17 @@ PRO TEST
  FREE_LUN,lun
 END
 
- datadir= 'c:/data/norstar/msp/2011/02/01/'
- filelist= FILE_SEARCH(datadir,'*_GILL_iv[23].dat',COUNT=nfiles)
+ datadir= 'c:/data/norstar/msp/2011/02/01/'  &  pattern= '*_GILL_iv[234].dat'
+ filelist= FILE_SEARCH(datadir,pattern,COUNT=nfiles)
  data= NORSTAR_MSP_DAT_READFILE(filelist[0])
  plot,data[9999:9999+1999].counts[0]
+
+ data= NORSTAR_MSP_DAT_READFILE(filelist)
  dat= NORSTAR_MSP_DAT_RESHAPE(data,UNIX_SECONDS=time)
  dat= TRANSPOSE(SQRT(dat.counts[1]))
  SHADE_SURF,dat,SHADE=BYTSCL(dat),ax=90,az=0
- ;SHADE_SURF,dat,(time-MIN(time))/3600.0,INDGEN(563),SHADE=BYTSCL(dat),ax=90,az=0,YRANGE=[563,0]
+ hour= ((time-time[0])/3600.0) > 0
+ SHADE_SURF,dat,hour,INDGEN(564),SHADE=BYTSCL(dat),ax=90,az=0,YRANGE=[563,0]
+ SHADE_SURF,dat[100:-200,0:543],hour[100:-200],INDGEN(544),SHADE=BYTSCL(dat[100:-200,0:543]),ax=90,az=0,YRANGE=[544,0],xrange=[3,3.5]
  
 END
