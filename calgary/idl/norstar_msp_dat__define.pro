@@ -55,6 +55,7 @@ PRO NORSTAR_MSP_DAT_IV2__DEFINE
 RETURN
 END
 
+
 ;# Version 3: added "north_step"
 PRO NORSTAR_MSP_DAT_IV3__DEFINE
   tmp= {NORSTAR_MSP_DAT_IV3     $ 
@@ -66,7 +67,7 @@ PRO NORSTAR_MSP_DAT_IV3__DEFINE
        ,device_id:0U            $  ;# 0x0001 for prototype
        ,packet_size:0U          $  ;# 0x0064
        ,mode:0U                 $  ;# 0x0101 nominal
-       ,step_table_version:0U   $  ;# 0x0010
+       ,steptable_version:0U    $  ;# 0x0010
        ,seconds:0L              $
        ,microseconds:0L         $
        ,mirror_step:0U          $  ;# step table index (0-?)
@@ -188,45 +189,65 @@ END
 
 FUNCTION NORSTAR_MSP_DAT_READFILE,filename,COUNT=n_records
 
-  record= {NORSTAR_MSP_DAT_IV3}  &  n_records= 0
+  n_records= 0  &  record_length= 64
+  
+  IF (filename EQ '') THEN BEGIN
+    MESSAGE,'Error- input filename is blank',/INFORMATIONAL
+    RETURN,!null
+  ENDIF
+  
   filelist= FILE_SEARCH(filename,COUNT=nfiles)
   IF (nfiles EQ 0) THEN BEGIN
     MESSAGE,'Error- no files found',/INFORMATIONAL
-    RETURN,record
+    RETURN,!null
   ENDIF
   fname= filelist[0]
 
-  CASE 1 OF
-  STRMATCH(fname,'*_ut??_*_iv2.dat'):record= {NORSTAR_MSP_DAT_IV2}
-  STRMATCH(fname,'*_ut??_*_iv3.dat'):record= {NORSTAR_MSP_DAT_IV3}
-  STRMATCH(fname,'*_ut??_*_iv4.dat'):record= {NORSTAR_MSP_DAT_IV4}
+  OPENR,lun,fname,/GET_LUN,/SWAP_IF_BIG_ENDIAN
+  filestat= FSTAT(lun)
+  IF (filestat.size LT record_length) THEN BEGIN
+    MESSAGE,'Error- file too small: '+fname+STRING(filestat.size),/INFORMATIONAL
+    FREE_LUN,lun
+    RETURN,!null    
+  ENDIF
+
+  IF ((filestat.size MOD record_length) NE 0) THEN $
+    MESSAGE,'Warning- excess bytes in file: '+fname,/INFORMATIONAL
+
+;# grab enough bytes for first record and do some sanity checks
+  b= BYTARR(record_length)  &  READU,lun,b
+
+  version= FIX(b[6:7],0) &  sitecode= STRING(b[2:5])
+  CASE version OF
+  2:record= {NORSTAR_MSP_DAT_IV2}
+  3:record= {NORSTAR_MSP_DAT_IV3}
+  4:record= {NORSTAR_MSP_DAT_IV4}
   ELSE: BEGIN
-    MESSAGE,'Error- unrecognized file name: '+fname,/INFORMATIONAL
+    MESSAGE,'Error- unrecognized record version in file: '+fname,/INFORMATIONAL
     RETURN,!NULL
     END
   ENDCASE
-
-  OPENR,lun,fname,/GET_LUN,/SWAP_IF_BIG_ENDIAN
-  filestat= FSTAT(lun)
-  IF (filestat.size LT N_TAGS(record,/DATA_LENGTH)) THEN BEGIN
-    MESSAGE,'Error- file too small: '+fname,/INFORMATIONAL
-    FREE_LUN,lun
-    RETURN,record    
-  ENDIF 
-
-  READU,lun,record
+  
+  IF (N_TAGS(record,/DATA_LENGTH) NE record_length) THEN MESSAGE,'Error- record_length mismatch'
+  
+  result= STREGEX(fname,'.*_ut.._(.*)_iv([2-4])\.dat$',/EXTRACT,/SUBEXPR)
+  IF (result[0] NE fname) THEN MESSAGE,'Warning- unexpected file name: '+fname,/INFORM
+  IF (result[1] NE sitecode) THEN MESSAGE,'Warning- file name sitecode mismatch: '+fname,/INFORM
+;  IF (result[2] NE version) THEN MESSAGE,'Warning- file name version mismatch: '+fname,/INFORM
+;# -this happens for all FSMI files in 2009 
+  
+;# re-read first record and do more validity testing
+  POINT_LUN,lun,0  &  READU,lun,record
   IF (NORSTAR_MSP_DAT_VALID(record) NE 0) THEN BEGIN
     MESSAGE,'Error- invalid initial record in file: '+fname,/INFORMATIONAL
-    stop
     FREE_LUN,lun
     RETURN,record    
   ENDIF
-  
-  nrecords= filestat.size / record.packet_size
-  data= REPLICATE(record,nrecords)
-  POINT_LUN,lun,0
-  READU,lun,data
-  FREE_LUN,lun
+
+;# read all records in file
+  n_records= filestat.size / record.packet_size
+  data= REPLICATE(record,n_records)
+  POINT_LUN,lun,0  &  READU,lun,data  &  FREE_LUN,lun
   
   FOR indx=1,nfiles-1 DO $
     data= [data,NORSTAR_MSP_DAT_READFILE(filelist[indx])] 
@@ -319,11 +340,14 @@ PRO NORSTAR_MSP_DAT_TEST_READ_ALL,datadir
   datadir= 'c:\data\norstar\msp\'
   yearlist= FILE_SEARCH(datadir+'????',/TEST_DIRECTORY,/MARK_DIRECTORY,COUNT=ndirs)  &  PRINT,ndirs
   FOREACH yeardir,yearlist DO BEGIN
-    PRINT,yeardir
-    daylist= FILE_SEARCH(yeardir+'??\??',/TEST_DIRECTORY,/MARK_DIRECTORY,COUNT=ndirs)  &  PRINT,ndirs
+;    daylist= FILE_SEARCH(yeardir+'02\09',/TEST_DIRECTORY,/MARK_DIRECTORY,COUNT=ndirs)
+    daylist= FILE_SEARCH(yeardir+'??\??',/TEST_DIRECTORY,/MARK_DIRECTORY,COUNT=ndirs)
+    PRINT,yeardir,ndirs,FORMAT='(A,2X,I)'
     FOREACH daydir,daylist DO BEGIN
-      PRINT,daydir
-      filelist= FILE_SEARCH(daydir+'*_ut??_*_iv[34].dat',/TEST_READ,COUNT=nfiles)  &  PRINT,nfiles
+;      filelist= FILE_SEARCH(daydir+'*_ut??_*_iv[2].dat',/TEST_READ,COUNT=nfiles)  
+      filelist= FILE_SEARCH(daydir+'*_ut??_*_iv[234].dat',/TEST_READ,COUNT=nfiles)
+      PRINT,daydir,nfiles,FORMAT='(A,2X,I)' 
+      IF (nfiles EQ 0) THEN CONTINUE  ;!! the foreach loop will call once with an empty string !!
       FOREACH filename,filelist DO data= NORSTAR_MSP_DAT_READFILE(filename,COUNT=nrec) 
     ENDFOREACH
   ENDFOREACH
@@ -386,6 +410,18 @@ PRO TEST
  FREE_LUN,lun
 END
 
+ datadir= 'c:\data\norstar\msp\'
+; daylist= FILE_SEARCH(datadir+'????/??/??',/TEST_DIRECTORY,/MARK_DIRECTORY,COUNT=ndirs)
+ pattern= '*_ATHA_iv[234].dat'
+ FOREACH daydir,daylist DO BEGIN 
+   f= FILE_SEARCH(daydir,pattern,COUNT=nfiles)
+   IF (nfiles EQ 0) THEN CONTINUE
+   d= NORSTAR_MSP_DAT_READFILE(f[0])
+   PRINT,f[0],d[0].step_table_version
+ ENDFOREACH
+ 
+ stop
+
  datadir= 'c:/data/norstar/msp/2011/02/01/'  &  pattern= '*_GILL_iv[234].dat'
  filelist= FILE_SEARCH(datadir,pattern,COUNT=nfiles)
  data= NORSTAR_MSP_DAT_READFILE(filelist[0])
@@ -398,5 +434,14 @@ END
  hour= ((time-time[0])/3600.0) > 0
  SHADE_SURF,dat,hour,INDGEN(564),SHADE=BYTSCL(dat),ax=90,az=0,YRANGE=[563,0]
  SHADE_SURF,dat[100:-200,0:543],hour[100:-200],INDGEN(544),SHADE=BYTSCL(dat[100:-200,0:543]),ax=90,az=0,YRANGE=[544,0],xrange=[3,3.5]
+ 
+ 
+ datadir= 'c:\data\norstar\msp\'
+ daylist= FILE_SEARCH(datadir+'????/??/??',/TEST_DIRECTORY,/MARK_DIRECTORY,COUNT=ndirs)
+ pattern= '*_GILL_iv[234].dat'
+ FOREACH daydir,daylist DO BEGIN 
+   f= FILE_SEARCH(datadir,pattern,COUNT=nfiles)
+   d= NORSTAR_MSP_DAT_READFILE(f[0])
+ ENDFOREACH
  
 END
