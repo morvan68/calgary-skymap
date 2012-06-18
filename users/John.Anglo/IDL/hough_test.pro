@@ -1,7 +1,7 @@
 
 
 
-function raster_circle, radius, a, b, frame_x, frame_y, value
+function raster_circle, radius, a, b, frame_x, frame_y, value, fill=fill
   if ~keyword_set(value) then value = 1
   x0=a+frame_x
   y0=b+frame_y
@@ -13,27 +13,44 @@ function raster_circle, radius, a, b, frame_x, frame_y, value
   
   x = 0
   y = radius
+  if ~keyword_set(fill) then begin
+    frame(x0+radius,y0)=value
+    frame(x0-radius,y0)=value
+    frame(x0,y0+radius)=value
+    frame(x0,y0-radius)=value
   
-  frame(x0+radius,y0)=value
-  frame(x0-radius,y0)=value
-  frame(x0,y0+radius)=value
-  frame(x0,y0-radius)=value
-  
-  while x lt y do begin
-    if f ge 0 then begin y-- & ddf_y += 2 & f += ddf_y & endif
-    x++
-    ddf_x += 2
-    f += ddf_x
+    while x lt y do begin
+      if f ge 0 then begin y-- & ddf_y += 2 & f += ddf_y & endif
+      x++
+      ddf_x += 2
+      f += ddf_x
     
-    frame(x0+x,y0+y)=value
-    frame(x0-x,y0+y)=value
-    frame(x0+x,y0-y)=value
-    frame(x0-x,y0-y)=value
-    frame(x0+y,y0+x)=value
-    frame(x0-y,y0+x)=value
-    frame(x0+y,y0-x)=value
-    frame(x0-y,y0-x)=value
-  endwhile
+      frame(x0+x,y0+y)=value
+      frame(x0-x,y0+y)=value
+      frame(x0+x,y0-y)=value
+      frame(x0-x,y0-y)=value
+      frame(x0+y,y0+x)=value
+      frame(x0-y,y0+x)=value
+      frame(x0+y,y0-x)=value
+      frame(x0-y,y0-x)=value
+      endwhile
+  endif else begin
+    frame(x0-radius:x0+radius,y0)=value
+    frame(x0,y0+radius)=value
+    frame(x0,y0-radius)=value
+  
+    while x lt y do begin
+      if f ge 0 then begin y-- & ddf_y += 2 & f += ddf_y & endif
+      x++
+      ddf_x += 2
+      f += ddf_x
+    
+      frame(x0-x:x0+x,y0+y)=value
+      frame(x0-x:x0+x,y0-y)=value
+      frame(x0-y:x0+y,y0+x)=value
+      frame(x0-y:x0+y,y0-x)=value
+      endwhile
+  endelse
   return, frame[frame_x:2*frame_x-1,frame_y:2*frame_y-1]
 end
 
