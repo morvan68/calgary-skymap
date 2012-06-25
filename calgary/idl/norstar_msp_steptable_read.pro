@@ -1,25 +1,17 @@
-;# Subversion $Id: norstar_msp_dat__define.pro 59 2012-05-31 16:57:03Z brian.jackel@gmail.com $
+;# Subversion $Id$
 
 ;+
 ; This IDL program reads mirror step tables for the NORSTAR meridian scanning photometer (MSP)
 ; 
 ; Example:
-;  datadir= 'c:/data/norstar/msp/2012/05/01/'  &  pattern='*_GILL_iv[234].dat' 
-;  filelist= FILE_SEARCH(datadir,pattern,COUNT=nfiles)
-;  data= NORSTAR_MSP_DAT_READFILE(filelist[0])
-;  plot,data[9999:9999+1999].counts[0]
-;
-;  data= NORSTAR_MSP_DAT_READFILE(filelist)
-;  dat= NORSTAR_MSP_DAT_RESHAPE(data,UNIX_SECONDS=time)
-;  dat= TRANSPOSE(SQRT(dat.counts[1]))
-;  SHADE_SURF,dat,SHADE=BYTSCL(dat),ax=90,az=0
+;  step= NORSTAR_MSP_STEPTABLE_READ(17)
 ;
 ;-
 
 
 FUNCTION NORSTAR_MSP_STEPTABLE_READ,version_number,DATA_DIRECTORY=datadir,FILENAME=filename
 
-  IF NOT KEYWORD_SET(datadir) THEN BEGIN
+  IF NOT KEYWORD_SET(datadir) THEN BEGIN  ;#  deafault: calgary/idl/../dat
     thisdir= FILE_DIRNAME(((SCOPE_TRACEBACK(/STRUCTURE))[-1]).filename,/MARK_DIRECTORY)
     datadir= STRJOIN([thisdir,PATH_SEP(/PARENT_DIRECTORY),'dat'],PATH_SEP())
   ENDIF
@@ -47,6 +39,9 @@ FUNCTION NORSTAR_MSP_STEPTABLE_READ,version_number,DATA_DIRECTORY=datadir,FILENA
   RETURN,step[0:fs.transfer_count-1]
 END
 
+
+; Make useful step-table plots 
+;
 PRO NORSTAR_MSP_STEPTABLE_PLOT_FIGURES,version_number,HARDCOPY=hardcopy
 
   ; create a multi-page postscript file in ../fig subdir
