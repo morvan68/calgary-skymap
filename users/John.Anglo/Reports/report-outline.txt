@@ -1,0 +1,64 @@
+'halfway there' report (outline)
+
+star tracking, again
+-unnecessary to fit exact ellipse to star paths, circle works with slight deviation - capella at 67 +- 3 pixels for example (4.5%)
+-use coordinate data (bright star database + existing coordinate calculation work) to locate star on circle path, refine by searching for maximum pixel?
+	-4.5% deviation from radius = expect star to be within an 8-pixel radius of circle point on a 200-pixel radius path
+		-for bright stars that are far apart, unlikely to point at wrong star inadvertently
+	-atmospheric refraction can change zenith angle by half a degree anyway, and site coordinates aren't exact but very close
+		-some amount of correction is necessary no matter what
+	-if center of image is zenith exactly, one-time search for polaris for each site to determine orientation
+	-need to relate circle radius to zenith angle; circular paths + horizon in image = approx. linear?
+	-time pointing -> azimuth angle; seems to be relatively straightforward thanks to metadata
+	-(bit filter multiplied to image to focus on feature. is there a better/quicker way?)
+-how many stars? which ones?
+	-polaris (mostly) doesn't move - magnitude shouldn't change at all
+	-capella is nearby: bright star, small observed brightness variation with zenith angle
+	-vega is often visible and very bright (should be widely observable), but closer to ecliptic: relatively limited data as star must be in field of view, and view must be clear
+
+atmospheric considerations
+-brightness of star related to altitude
+	-less atmosphere for light to pass through near zenith
+	-well-defined curve as star moves away from/towards horizon
+-if atmosphere is uniform, brightness should be relatable to site latitude also
+	-ex. gillam ~56 degrees north, the pas ~53 degrees north = ~7500 counts for capella at gillam versus ~8500 at the pas
+		-same night, same position in sky, different zenith angle due to latitude
+	->airmass formulas; can be approximated with secant at zenith angles less than ~60 degrees apparently
+	-polaris: brightness should be constant and related only to zenith angle, which is dependent on site latitude
+-if instruments work identically and star tracking works, brightness curves should be fairly predictable
+
+clear nights?
+right now, star data is only useful when nights are clear of clouds, aurora, the moon (literally everything else)
+	-clouds block out stars completely most of the time; otherwise difficult to track
+	-moon reflections drown everything out when it's nearby, moon saturates pixels when it's visible
+	-stars still visible through aurora but background of star is often non-uniform and difficult to remove
+if clear night data is insufficient, then aurora-filled data might be useable but 
+	-field of view will have to be narrowed
+		-background is expected to be more uniform the smaller the region in question
+	-does aurora simply add to star value?
+	-how to distinguish between cloud and aurora? is aurora brightness well-defined? cloud brightness?
+is it possible to automate picking out 'nice' regions?
+	-easy to look at data and declare it cloudy/filled with aurora vs clear. statistical feature differentiating cloudy from clear?
+	-ex. generally aurora regions seem to have higher average pixel values than clear regions, same as cloudy regions due to scattered light(?)
+		-background is roughly uniform when view is clear
+	-variances also go up when view is cloudy/aurora-filled, but why?
+	-possible to look at time sequence of averages; clear regions tend to be much flatter but feature occasional spikes maybe due to ground activity
+	-build a checklist of 'nice' features, based on both full region data and star-local pixels?
+		-star-local checks would be useful for not throwing too much data away
+		-tracking is labourious by itself; may be best to postpone until after data is rejected or else waste some time
+		-too few pixels around star for this?
+	-decision tree?
+		clear-> straight to tracking
+		aurora-> after refining pointing, narrower region of integration for background and star
+		cloudy-> look at immediate region to determine if locally clear, else reject
+		moon-> throw out
+	-see if background changes/stays constant over nights?
+	-pick out 'star-filled' i.e. full of point functions
+(is it sufficient to pick out 'nice' data?)
+
+hypothetical algorithm for picking out brightness data:
+1. coordinate calculations to pick out times when star is above horizon (positive altitude angle)
+2. match time with data regions using metadata etc.
+3. figure out what to do to clean up/throw out data
+4. track star with circle, refine with maximum point (save refined radius data for future reference)
+5. ...while adding stuff up to get brightness per frame
