@@ -1,4 +1,4 @@
-;# Subversion $Id: file rev date time user $
+;# Subversion $Id$
 
 ;# TO DO: use JULIAN=2 to get modified julian dates
 
@@ -66,6 +66,7 @@ PRO SKYMAP_GEOSPACE::SET_SYSTEM,value,ERROR_FLAG=error_flag,_EXTRA=_extra
   tmp= STRUPCASE(STRCOMPRESS(value[0],/REMOVE_ALL))
   match= WHERE(tmp EQ valid,nmatch)
   IF (nmatch NE 1) THEN BEGIN
+    stop
     MESSAGE,'Error- unknown input value: '+tmp,/INFORM  &  RETURN
   ENDIF
   self.system= valid[match]  &  error_flag=0
@@ -87,6 +88,7 @@ END ;#--------------------------------------------------------------------------
 
 FUNCTION SKYMAP_GEOSPACE::GET_VECTOR,system,NO_COPY=no_copy
   ;IF KEYWORD_SET(NO_COPY) THEN tmp=self ELSE tmp=self->SKYMAP_VECTOR::COPY()
+  ;stop
   IF (N_PARAMS() GT 0) THEN self->convert,system
   IF KEYWORD_SET(NO_COPY) THEN result=self ELSE result=self->SKYMAP_VECTOR::COPY()
   RETURN,result
@@ -114,7 +116,7 @@ PRO SKYMAP_GEOSPACE::SET,system,vector,time,ERROR_FLAG=error_flag,_EXTRA=_extra
   self->set_system,system,ERROR_FLAG=error_flag1,_EXTRA=_extra
   self->set_vector,vector,ERROR_FLAG=error_flag2,_EXTRA=_extra
   self->set_time,time,ERROR_FLAG=error_flag3,_EXTRA=_extra    
-  error_flag= error_flag1 AND error_flag2 AND error_flag3
+  error_flag= error_flag1 OR error_flag2 OR error_flag3
 RETURN
 END ;#----------------------------------------------------------------------------
 
@@ -194,7 +196,7 @@ END ;#--------------------------------------------------------------------------
 
 FUNCTION SKYMAP_GEOSPACE::MATRIX,from,into,julian_date,ERROR_FLAG=error_flag
   ON_ERROR,2  &  error_flag=1
-  CATCH,status  &  IF (self->skymap_object::catch(status)) THEN RETURN,1
+  CATCH,status  &  IF (self->skymap_object::catch(status)) THEN RETURN,1 ;[[1,0,0],[0,1,0],[0,0,1]]
 
   IF (julian_date EQ !NULL) THEN MESSAGE,'Error- invalid input julian_date'
   ;# should do more input checking
@@ -286,6 +288,7 @@ FUNCTION SKYMAP_GEOSPACE::MATRIX,from,into,julian_date,ERROR_FLAG=error_flag
      tmatrix= temp##tmatrix
   ENDFOR
 
+  error_flag=0
   RETURN,tmatrix
 END ;#----------------------------------------------------------------------------
 
@@ -294,13 +297,13 @@ END ;#--------------------------------------------------------------------------
 ;# this is simple for a single vector at a single time, but gets tricky for multiple
 ;# vectors or multiple times or both.  Start with brute force looping and leave any
 ;# thoughts of caching for *much* later..
-PRO SKYMAP_GEOSPACE::CONVERT,into,TMATRIX=tmatrix,ERROR_FLAG=error_flag  ;# TRANSFORM??
+PRO SKYMAP_GEOSPACE::CONVERT,newsystem,TMATRIX=tmatrix,ERROR_FLAG=error_flag  ;# TRANSFORM??
   oldsystem= self.system
-  self.set_system,into,ERROR_FLAG=error_flag  &  IF (error_flag) THEN RETURN
+  self.set_system,newsystem,ERROR_FLAG=error_flag  &  IF (error_flag) THEN RETURN
   IF (self.system EQ oldsystem) THEN RETURN  ;# identity transformation
   mjdate= self.time->get(/julian_day)
-  tmatrix= self.matrix(oldsystem,self.system,mjdate)
-  *self.vector= tmatrix ## *self.vector
+  tmatrix= self.matrix(oldsystem,self.system,mjdate,ERROR_FLAG=error_flag)
+  IF (~error_flag) THEN *self.vector= tmatrix ## *self.vector  ;&  print,tmatrix
   RETURN
 END ;#----------------------------------------------------------------------------
 
@@ -376,8 +379,8 @@ END ;#--------------------------------------------------------------------------
 PRO SKYMAP_GEOSPACE__DEFINE
   COMPILE_OPT HIDDEN        ;# don't clutter user visible namespace
 
-  RESOLVE_ROUTINE,'SKYMAP_TIME__DEFINE',/COMPILE_FULL_FILE,/NO_RECOMPILE,/EITHER
-  RESOLVE_ROUTINE,'SKYMAP_GEOGRAPHIC__DEFINE',/COMPILE_FULL_FILE,/NO_RECOMPILE,/EITHER
+  RESOLVE_ROUTINE,'SKYMAP_TIME__DEFINE',COMPILE_FULL_FILE=0,/NO_RECOMPILE,/EITHER
+  RESOLVE_ROUTINE,'SKYMAP_GEOGRAPHIC__DEFINE',COMPILE_FULL_FILE=0,/NO_RECOMPILE,/EITHER
     
   void= {SKYMAP_GEOSPACE             $
         ,system:''                   $  ;# GEI, GEO, GSE, GSM, SM, MAG                

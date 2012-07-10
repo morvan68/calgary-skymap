@@ -1,15 +1,14 @@
-;# Subversion $Id: file rev date time user $
+;# Subversion $Id$
 
-;
 ;+
-; This IDL object translates [height,latitude,longitude] to and from an
-; internal Cartesian representation (GEOc) using the SKYMAP_VECTOR object. 
+; This IDL object contains a single geographic location. 
+; The internal representation is Cartesian (GEOc) using the SKYMAP_VECTOR object. 
 ;
-; It also provides local direction (ENU) vectors (ie. east, north, up)
-; 
-; The Earth is not a perfect sphere, but can be approximated by an oblate ellipsoid.
-; Geographic coordinates use a reference geoid (ie. WGS-84).
-;
+; Input/output can be in
+;  1) Cartesian 
+;  2) Spherical
+;  3) Geodetic (AKA geographic) relative to use a reference geoid (ie. WGS-84) <==DEFAULT 
+;  
 ; Examples:
 ; 
 ;  IDL> g= SKYMAP_GEOGRAPHIC()
@@ -59,11 +58,11 @@ RETURN,result
 END
 
 
-;# called only by OBJ_CREATE
+;# called only by OBJ_NEW.  We allow empty input, screen so ->set doesn't complain
 FUNCTION SKYMAP_GEOGRAPHIC::INIT,value,_EXTRA=_extra
   COMPILE_OPT HIDDEN        ;# don't clutter user visible namespace
-  void= self->set_geoid()
-  IF (N_PARAMS() GT 0) THEN self->set,value,ERROR_FLAG=error_flag,_EXTRA=_extra
+  void= self->set_geoid()  &  error_flag=0
+  IF (N_PARAMS() GT 0) AND (value NE !NULL) THEN self->set,value,ERROR_FLAG=error_flag,_EXTRA=_extra
   RETURN,~error_flag
 END ;#----------------------------------------------------------------------------
 
@@ -167,7 +166,7 @@ FUNCTION SKYMAP_GEOGRAPHIC::GET,CARTESIAN=cartesian,VECTOR=vector,RADIANS=radian
   
   ;# ?? TO DO ?? replace with Bowring 1985: faster and more accurate
   p= SQRT(x^2 + y^2)  ;&  phi= ATAN(z/p)
-  phi= atan(z,p*(1d0-geoid.e2))
+  phi= ATAN(z,p*(1d0-geoid.e2)) ; !!explain!!
   FOR indx=1,2 DO BEGIN        ;two passes is enough for sub-metre accuracy
     sin_phi= SIN(phi)
     Nphi= geoid.a/SQRT(1.0d0 - geoid.e2*sin_phi^2)
@@ -190,7 +189,7 @@ END ;#--------------------------------------------------------------------------
 
 ;# need to fix for multiple positions
 ;# and/or cache to avoid pointless recalculation
-FUNCTION SKYMAP_GEOGRAPHIC::LOCAL2GEO_MATRIX,latitude,longitude
+FUNCTION SKYMAP_GEOGRAPHIC::LOCAL2GEO_MATRIX ;,latitude,longitude
   geo= self.get(/RADIANS)
   phi= REFORM( geo[*,1] )               ;geodetic latitude
   cphi= COS(phi)  &  sphi= SIN(phi)
@@ -238,7 +237,7 @@ END ;#--------------------------------------------------------------------------
 PRO SKYMAP_GEOGRAPHIC__DEFINE
   COMPILE_OPT HIDDEN        ;# don't clutter user visible namespace
 
-  RESOLVE_ROUTINE,'SKYMAP_VECTOR__DEFINE',/COMPILE_FULL_FILE,/EITHER,/NO_RECOMPILE
+  RESOLVE_ROUTINE,'SKYMAP_VECTOR__DEFINE',COMPILE_FULL_FILE=0,/EITHER,/NO_RECOMPILE
   
   void= {SKYMAP_GEOID, a:0.0d0, f:0.0d0, e2:0.0d0, f2:0.0d0} 
   

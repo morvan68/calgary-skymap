@@ -1,8 +1,8 @@
-;#  Subversion $Id: skymap_object__define.pro 190 2010-12-12 02:20:57Z bjackel $
+;#  Subversion $Id$
 
 ;+
 ; Superclass that inherits IDL_OBJECT for operator overloading; also provides some utility methods.  
-; Can also be used to factor out shared code from SKYMAP_TIME and SKYMAP_VECTOR superclasses.
+; Originally used to factor out shared code from SKYMAP_TIME and SKYMAP_VECTOR subclasses.
 ;
 ; Examples:
 ;  
@@ -224,10 +224,13 @@ PRO SKYMAP_OBJECT__DEFINE
   callstack= SCOPE_TRACEBACK(/STRUCTURE) ; &  caller= callstack[-2]
   path= FILE_DIRNAME(callstack[-1].filename,MARK_DIRECTORY=0)  ;&  pos= STRPOS(!PATH,path)
   IF (STRPOS(!PATH,path) EQ -1) THEN BEGIN
-    MESSAGE,'Warning- skymap_object not in !PATH, appending: '+path,/INFORM
-    !PATH= !PATH + PATH_SEP(/SEARCH_PATH) + path
+    MESSAGE,'Warning- skymap_object not in !PATH, prepending: '+path,/INFORM
+    !PATH= path + PATH_SEP(/SEARCH_PATH) + !PATH
     PATH_CACHE,CLEAR=1,REBUILD=0  ;# lazy rebuild
   ENDIF ;& stop
+  
+  void= {SKYMAP_SYSV, pi:!dpi, dtor:!dpi/180.0}
+  DEFSYSV,'!SKYMAP',void,1    ;# read-only
 
 RETURN
 END ;#----------------------------------------------------------------------------

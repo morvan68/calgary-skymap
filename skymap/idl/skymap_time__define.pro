@@ -1,15 +1,19 @@
-;#  Subversion $Id: skymap_time__define.pro 190 2010-12-12 02:20:57Z bjackel $
+;#  Subversion $Id$
 ;+
 ; Store and convert time value(s).  Gather together all(?) IDL time conversion tools.
 ; 
-;
 ; Examples:
-;  
-;   x= skymap_time(0,/UNIX)           ;# seconds since 00:00:00 January 01, 1970
-;    
-;   print,x.get(/ISO8601)
+;   x= skymap_time(0,/UNIX)                 ;# seconds since 00:00:00 January 01, 1970
+;   print,x.get(/ISO8601)                   ;# ==> 19700101T000000
+;   x.set,'1970-01-01T00:00:00',ISO8601=2   ;# extended format
 ;   
-;   x.set,'1970-01-01T00:00:00',ISO8601=2
+;   ISO-8601
+;   UNIX
+;   CDF
+;   JULIAN
+;   YMDHMS
+;   Y2K
+;   
 ;-
 
 ;# -use double precision everywhere
@@ -151,7 +155,7 @@ END ;#--------------------------------------------------------------------------
 
 
 
-FUNCTION SKYMAP_TIME::YMDHMS,value,NO_COPY=no_copy
+FUNCTION SKYMAP_TIME::YMDHMS,value,NO_COPY=no_copy,FORMAT=format
   COMPILE_OPT HIDDEN        ;# private utility for internal use only
   
   IF (N_PARAMS() EQ 0) THEN BEGIN
@@ -161,6 +165,7 @@ FUNCTION SKYMAP_TIME::YMDHMS,value,NO_COPY=no_copy
       CDF_EPOCH,cdf_epoch[indx],year,month,day,hour,minute,second,/BREAKDOWN
       result[0,indx]= [year,month,day,hour,minute,second]
     ENDFOR
+    IF (format NE !NULL) THEN result= STRING(result,FORMAT=format)
     RETURN,result  
   ENDIF
 
@@ -201,7 +206,7 @@ FUNCTION SKYMAP_TIME::ISO8601,value,EXTENDED_FORMAT=extended_format
   regexp= '([0-9]{4})\-?([0-9]{2})\-?([0-9]{2})T([0-9]{2}):?([0-9]{2}):?([0-9]{2})'
   FOR indx=0L,self.n_elements-1L DO BEGIN
     ymdhms= STREGEX(value[indx],regexp,/SUBEXPR,/EXTRACT) 
-    IF (ymdhms[0] NE '') THEN tmp[0,indx]= ymdhms[1:6] ;ELSE COMPLAIN !!FIXME!!
+    IF (ymdhms[0] NE '') THEN tmp[0,indx]= ymdhms[1:6] ELSE MESSAGE,'Warning- unrecognized date string: '+value[indx],/INFORM 
   ENDFOR
   success= self.ymdhms(tmp)   ;# convert YMDHMS to internal
 
@@ -270,7 +275,7 @@ PRO SKYMAP_TIME::SET,value,ERROR_FLAG=error_flag,NO_COPY=no_copy  $
        ,CDF_MILLISECONDS=cdf_milliseconds,Y2K_SECONDS=y2k_seconds,JULIAN_DAY=julian_day  $
        ,ISO8601_STRING=iso8601_string,YMDHMS_ARRAY=ymdhms_array,UNIX_SECONDS=unix_seconds
 
-  ON_ERROR,2  &  error_flag=0
+  ON_ERROR,2  &  error_flag=0  ;&  stop
   CATCH,status  &  IF (self.catch(status)) THEN RETURN  
 
   siz= SIZE(value,/STRUCTURE)

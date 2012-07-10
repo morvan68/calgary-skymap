@@ -29,8 +29,7 @@
 FUNCTION SKYMAP_VECTOR,value,ERROR_FLAG=error_flag,COPY=copy,_EXTRA=_extra
   error_flag=1
   siz= SIZE(value,/STRUCT)
-  classname= ((SCOPE_TRACEBACK(/STRUCTURE))[-1]).routine ; &  stop
-  ;classname= 'SKYMAP_VECTOR'  &  siz= SIZE(value,/STRUCT)
+  classname= ((SCOPE_TRACEBACK(/STRUCTURE))[-1]).routine ; & classname= 'SKYMAP_VECTOR'
   IF (siz.type_name EQ 'OBJREF') THEN IF (OBJ_CLASS(value) EQ classname) THEN BEGIN
     IF KEYWORD_SET(COPY) THEN result= value.copy() ELSE result= value
     error_flag=0  &  RETURN,result
@@ -40,7 +39,7 @@ RETURN,result
 END
 
 
-;# called only by OBJ_CREATE
+;# called only by OBJ_NEW
 FUNCTION SKYMAP_VECTOR::INIT,value,_EXTRA=_extra
   COMPILE_OPT HIDDEN        ;# don't clutter user visible namespace
   IF (value NE !NULL) THEN self->set,value,ERROR_FLAG=error_flag,_EXTRA=_extra ELSE error_flag=0
@@ -81,7 +80,7 @@ END ;#--------------------------------------------------------------------------
 ;# 
 FUNCTION SKYMAP_VECTOR::_overloadEQ,left,right
   COMPILE_OPT HIDDEN        ;# don't clutter user visible namespace
-  IF (SIZE(left,/TYPE) NE 11) OR (SIZE(left,/TYPE) NE 11) THEN RETURN,0
+  IF (SIZE(left,/TYPE) NE 11) OR (SIZE(right,/TYPE) NE 11) THEN RETURN,0
   IF NOT OBJ_ISA(left,OBJ_CLASS(self)) THEN RETURN,0
   IF NOT OBJ_ISA(right,OBJ_CLASS(self)) THEN RETURN,0    
   RETURN,TOTAL(self,3) ;BOOM
@@ -192,8 +191,11 @@ PRO SKYMAP_VECTOR::SET,value,ERROR_FLAG=error_flag,NO_COPY=no_copy,TRANSPOSE=tra
        MESSAGE,'Warning- input value is undefined',/INFORMATIONAL
        error_flag=0  &  RETURN
      END
-  11: IF OBJ_ISA(value,OBJ_CLASS(self)) THEN BEGIN ;# 'OBJREF' , copy (overwrite) self with value
-        self.set,(value.skymap_vector::get()),ERROR_FLAG=error_flag & RETURN
+  ;11: IF OBJ_ISA(value,OBJ_CLASS(self)) THEN BEGIN ;# !!FIXME!! fails for subclass ie. SKYMAP_VECTOR::SET: Error- input object must be of class SKYMAP_GEOSPACE, was SKYMAP_VECTOR
+  ;# 'OBJREF' , copy (overwrite) self with value
+  ;11: IF OBJ_ISA(value,'SKYMAP_VECTOR') THEN BEGIN 
+  11: IF OBJ_ISA(OBJ_CLASS(self),OBJ_CLASS(value)) THEN BEGIN
+        self->skymap_vector::set,(value->skymap_vector::get()),ERROR_FLAG=error_flag & RETURN
       ENDIF ELSE MESSAGE,'Error- input object must be of class '+OBJ_CLASS(self)+', was '+OBJ_CLASS(value)
   10: IF PTR_VALID(value) THEN BEGIN 
         self.set,*value,ERROR_FLAG=error_flag & RETURN 
@@ -243,7 +245,7 @@ END ;#--------------------------------------------------------------------------
 
 FUNCTION SKYMAP_VECTOR::COPY  ;#,scalar_value,OVERWRITE=overwrite 
   ;RETURN,SKYMAP_VECTOR(self->skymap_vector::get())  ;# 0.164 seconds for 1x3 999 times
-  result= REFORM(*self.vector,[self.dimensions(/NO_ZERO),3],/OVERWRITE)
+  result= REFORM(*self.vector,[self.dimensions(/NO_ZERO),3])
   RETURN,SKYMAP_VECTOR(result)  ;# 0.03 seconds, worth optimizing(?)
 END ;#----------------------------------------------------------------------------
 
@@ -440,6 +442,20 @@ FUNCTION SKYMAP_VECTOR::EULER_MATRIX,alpha_angle,beta_angle,gamma_angle,DEGREES=
 END ;#----------------------------------------------------------------------------
 
 
+;# y.REGULAR_GRID([15,10],[90,70],[5.0,10,20],/degrees) ;5 degrees clockwise, 10 towards north pole, 20 to positive longitude
+;#
+FUNCTION SKYMAP_VECTOR::REGULAR_GRID,angles,steps,rotations,DEGREES=degrees
+  lat= (FINDGEN(steps[0])/(steps[0]-1.0) - 0.5 ) * angles[0] & lat= lat # REPLICATE(1,steps[1])
+  lon= (FINDGEN(steps[1])/(steps[1]-1.0) - 0.5 ) * angles[1] & lon= REPLICATE(1,steps[0]) # lon
+  one= lat*0 + 1
+  vec= SKYMAP_VECTOR([[[one]],[[lat]],[[lon]]],SPHERICAL=2,DEGREES=degrees)
+  rot= vec.rotation_matrix(-rotations,['X','Y','Z'],DEGREES=degrees)
+  vec.matrix_multiply,rot
+  RETURN,vec
+END ;#----------------------------------------------------------------------------
+
+
+
 ;# Goal is to test each method under a range of inputs.
 ;# !!RUN THIS AFTER ANY CODE CHANGE!
 FUNCTION SKYMAP_VECTOR::SELFTEST
@@ -533,7 +549,7 @@ END ;#--------------------------------------------------------------------------
 PRO SKYMAP_VECTOR__DEFINE
   COMPILE_OPT HIDDEN        ;# don't clutter user visible namespace
   
-  RESOLVE_ROUTINE,'SKYMAP_OBJECT__DEFINE',/COMPILE_FULL_FILE,/EITHER,/NO_RECOMPILE  ;# shouldn't be necessary
+  RESOLVE_ROUTINE,'SKYMAP_OBJECT__DEFINE',COMPILE_FULL_FILE=0,/EITHER,/NO_RECOMPILE  ;# shouldn't be necessary
   
   void= {SKYMAP_VECTOR                 $
         ,n_elements:0UL                $

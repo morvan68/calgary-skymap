@@ -1,4 +1,4 @@
-;# Subversion $Id: file rev date time user $
+;# Subversion $Id$
 ;
 ;# ?? TO DO ??  -factor out aim_[target,range,height] into skymap geographic
 ;#              -rename remainder to skymap_aim?
@@ -43,12 +43,12 @@ RETURN,result
 END
 
 
-;# called only by OBJ_CREATE
+;# called only by OBJ_NEW
 FUNCTION SKYMAP_GEO_AIM::INIT,location,time,_EXTRA=_extra
   COMPILE_OPT HIDDEN        ;# don't clutter user visible namespace
   self.location= SKYMAP_GEOGRAPHIC(location,_EXTRA=_extra)  ;# FIXME: allocate empty and use set method?
   self.direction= SKYMAP_GEOSPACE('GEO',[0,0,0],time,_EXTRA=_extra)
-  self.set_orientation,self.orientation.euler_angles
+  self.set_orientation,self.orientation.euler_angles  ;# should be [0,0,0] at this point
   RETURN, OBJ_VALID(self.location) AND OBJ_VALID(self.direction) 
 END ;#----------------------------------------------------------------------------
 
@@ -128,32 +128,32 @@ END ;#--------------------------------------------------------------------------
 
 
 ;azimith/zenith angle  or  right ascension/declination
-PRO SKYMAP_GEO_AIM::SET_AIM,angles,ERROR_FLAG=error_flag,ASTRONOMICAL=astronomical,DEVICE=device,_EXTRA=_extra
+PRO SKYMAP_GEO_AIM::SET_AIM,value,ERROR_FLAG=error_flag,ASTRONOMICAL=astronomical,DEVICE=device,VECTOR=vector,_EXTRA=_extra
 
   IF KEYWORD_SET(ASTRONOMICAL) THEN BEGIN
     system='gei'    &  spherical=2   ;# right ascension, declination
-  ENDIF ELSE IF KEYWORD_SET(INSTRUMENTAL) THEN BEGIN
+  ENDIF ELSE IF KEYWORD_SET(DEVICE) THEN BEGIN
     system='device' &  spherical=4    
   ENDIF ELSE BEGIN  
     system='local'  &  spherical=4   ;# azimuth, zenith angle
-  ENDELSE
+  ENDELSE ; &  stop
   
   IF KEYWORD_SET(VECTOR) THEN BEGIN
-    self.direction->set_vector,angles,ERROR_FLAG=error_flag,_EXTRA=_extra
+     self.direction->set_vector,value,ERROR_FLAG=error_flag,_EXTRA=_extra
   ENDIF ELSE BEGIN
-    siz= SIZE(angles,/STRUCT)  &  n= siz.n_elements / 2  &  angles= REFORM(angles,n,2) ;# need to check siz=Nx2
+    siz= SIZE(value,/STRUCT)  &  n= siz.n_elements / 2  &  angles= REFORM(value,n,2) ;# need to check siz=Nx2
     vec= DBLARR(n,3)  &  vec[*,0]= 1.0d0  &  vec[*,1]= angles[*,1]  &  vec[*,2]= angles[*,0]
     self.direction->set_vector,vec,SPHERICAL=spherical,ERROR_FLAG=error_flag,_EXTRA=_extra  
-  ENDELSE
-  self.direction->set_system,system
-  
+  ENDELSE  ;&  stop
+   
   IF NOT KEYWORD_SET(ASTRONOMICAL) THEN BEGIN
     matrix= self.location.local2geo_matrix()
-    IF KEYWORD_SET(INSTRUMENTAL) THEN matrix= matrix ## TRANSPOSE(self.orientation.local2device)
+    IF KEYWORD_SET(DEVICE) THEN matrix= matrix ## TRANSPOSE(self.orientation.local2device)
     self.direction.matrix_multiply,matrix
     system='geo'
   ENDIF  ;#  geo= loc2geo##(dev2loc##dev) = (loc2geo##dev2loc)##dev 
-  
+  self.direction->set_system,system   ;# must be valid geospace, so either GEO or GEI
+ 
   RETURN
 END ;#----------------------------------------------------------------------------
 
@@ -161,16 +161,16 @@ END ;#--------------------------------------------------------------------------
 FUNCTION SKYMAP_GEO_AIM::GET_AIM,ASTRONOMICAL=astronomical,DEVICE=device,DEGREES=degrees,STRUCTURE=structure,VECTOR=vector
   
 ;# !!FIXME!! vectorize  
-  aim= self.direction  &  nel= aim.n_elements()  &  dim= aim.dimensions(/NO_ZERO)
+  aim= self.direction  &  nel= aim.n_elements()  &  dim= aim.dimensions(/NO_ZERO)  ;&  stop
   IF KEYWORD_SET(ASTRONOMICAL) THEN BEGIN
     aim= aim->get_vector('gei')  &  spherical=2  ;# ra/dec     ;# add hhhmmss for ra     
   ENDIF ELSE BEGIN
     aim= aim->get_vector('geo')  &  spherical=4  ;# az/za
     matrix= TRANSPOSE(self.location.local2geo_matrix()) ;# east,north,up
-    IF KEYWORD_SET(INSTRUMENTAL) THEN matrix= self.orientation.local2device ## matrix
+    IF KEYWORD_SET(DEVICE) THEN matrix= self.orientation.local2device ## matrix
     aim.matrix_multiply,matrix
-  ENDELSE
-  
+  ENDELSE  ;&  stop
+ 
   IF KEYWORD_SET(VECTOR) THEN RETURN,aim    ;# {SKYMAP_VECTOR}
   
   aim= aim.get(SPHERICAL=spherical,DEGREES=degrees,/NO_REFORM)   ;#  DBLARR(N,3)  
@@ -427,9 +427,9 @@ PRO SKYMAP_GEO_AIM__DEFINE
   COMPILE_OPT IDL2,HIDDEN        ;# don't clutter user visible namespace
 
  ; RESOLVE_ROUTINE,'SKYMAP_VECTOR__DEFINE',/COMPILE_FULL_FILE,/EITHER,/NO_RECOMPILE
-  RESOLVE_ROUTINE,'SKYMAP_OBJECT__DEFINE',/COMPILE_FULL_FILE,/EITHER,/NO_RECOMPILE
-  RESOLVE_ROUTINE,'SKYMAP_GEOGRAPHIC__DEFINE',/COMPILE_FULL_FILE,/EITHER,/NO_RECOMPILE
-  RESOLVE_ROUTINE,'SKYMAP_GEOSPACE__DEFINE',/COMPILE_FULL_FILE,/EITHER,/NO_RECOMPILE
+  RESOLVE_ROUTINE,'SKYMAP_OBJECT__DEFINE',COMPILE_FULL_FILE=0,/EITHER,/NO_RECOMPILE
+  RESOLVE_ROUTINE,'SKYMAP_GEOGRAPHIC__DEFINE',COMPILE_FULL_FILE=0,/EITHER,/NO_RECOMPILE
+  RESOLVE_ROUTINE,'SKYMAP_GEOSPACE__DEFINE',COMPILE_FULL_FILE=0,/EITHER,/NO_RECOMPILE
  ; FORWARD_FUNCTION skymap_vector
 
   void= {SKYMAP_GEO_AIM_DEVICE, rotation_angle:0.0d0, axial_angle:0.0d0}
