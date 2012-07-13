@@ -9,7 +9,7 @@
 ;ratio: dec to pixel radius ratio, default is 81.49
 ;bound: largest zenith angle to draw for in degrees
 
-function pointing_mask, object, location, time, pole = pole, zenith = zenith, frame = frame, ratio = ratio, bound=bound, z_angle=z_angle
+function pointing_mask, object, location, time, pole = pole, zenith = zenith, frame = frame, ratio = ratio, bound=bound, zen_angle=zen_angle
   if ~keyword_set(pole) then pole = 0
   if ~keyword_set(zenith) then zenith  =[128,128]
   if ~keyword_set(frame) then frame = [256,256]
@@ -18,10 +18,9 @@ function pointing_mask, object, location, time, pole = pole, zenith = zenith, fr
   endif else bound = bound*!dpi/180d
   p = pole*!dpi/180d
   
-  
-  location=  [100.0,[location]]
+  site_location=  [100.0,[location]]
   skymap_geographic__define
-  site= skymap_geographic(location)
+  site= skymap_geographic(site_location)
   skymap_geo_aim__define
   gaim= skymap_geo_aim(site)
   
@@ -29,7 +28,7 @@ function pointing_mask, object, location, time, pole = pole, zenith = zenith, fr
   gaim.set_aim,object,/astro,/degrees
   
   coords = reform(gaim.get_aim())
-  if arg_present(z_angle) then z_angle = coords[1]
+  if arg_present(zen_angle) then zen_angle = coords[1]
   if coords[1] gt bound then return, ulonarr(256,256)
   
   point = round(zenith + rotate(cv_coord(from_polar=(coords*[1,ratio]+[!dpi/2+p,0]),/to_rect),4))
@@ -38,7 +37,7 @@ function pointing_mask, object, location, time, pole = pole, zenith = zenith, fr
   return, raster_circle(rad,point[0],point[1],frame[0],frame[1],/fill)
 end
 
-pro manual_refine_params, data, metadata, pole, zenith, ratio, rotate = rotate
+pro manual_refine_params, data, metadata, location, pole, zenith, ratio, rotate = rotate
   length = (size(data))[3]
   rdata=ulonarr(256,256,length)
   if keyword_set(rotate) then begin & for i = 0, length-1 do rdata[*,*,i] = rotate(data[*,*,i],7)
@@ -50,16 +49,16 @@ pro manual_refine_params, data, metadata, pole, zenith, ratio, rotate = rotate
   ratio = 256d/!dpi
   pole = 0
   zenith  =[128,128]
-  time = (strsplit(metadata[i].exposure_start_string,":- ",/extract))[0:5]
-  frame=rdata[*,*,i]*(1+pointing_mask([79.35,46.01],[56.35,265.3],time,pole=pole,zenith=zenith,ratio=ratio)$
-    +pointing_mask([88.8,7.41],[56.3,265.3],time,pole=pole,zenith=zenith,ratio=ratio)$
-    +pointing_mask([101.4,-16.72],[56.3,265.3],time,pole=pole,zenith=zenith,ratio=ratio)$
-    +pointing_mask([115,5.2],[56.3,265.3],time,pole=pole,zenith=zenith,ratio=ratio)$
-    +pointing_mask([116.5,28],[56.3,265.3],time,pole=pole,zenith=zenith,ratio=ratio)$
-    +pointing_mask([41.2,89.31],[56.3,265.3],time,pole=pole,zenith=zenith,ratio=ratio))
     print,'wasd to move zenith, q/e to change pole angle, o/l to raise/lower ratio, y to finalize parameters'
-    tvscl,rebin(sqrt(frame-min_val),512,512,/sample)
-    while c ne 'y' do begin
+    repeat begin
+      time = (strsplit(metadata[i].exposure_start_string,":- ",/extract))[0:5]
+      frame=rdata[*,*,i]*(1+pointing_mask([79.35,46.01],location,time,pole=pole,zenith=zenith,ratio=ratio)$
+        +pointing_mask([88.8,7.41],location,time,pole=pole,zenith=zenith,ratio=ratio)$
+        +pointing_mask([101.4,-16.72],location,time,pole=pole,zenith=zenith,ratio=ratio)$
+        +pointing_mask([115,5.2],location,time,pole=pole,zenith=zenith,ratio=ratio)$
+        +pointing_mask([116.5,28],location,time,pole=pole,zenith=zenith,ratio=ratio)$
+        +pointing_mask([41.2,89.31],location,time,pole=pole,zenith=zenith,ratio=ratio))
+        tvscl,rebin(sqrt(frame-min_val),512,512,/sample)
       c = get_kbrd(1,/escape)
       case c of
       'w':  zenith[1]++
@@ -80,22 +79,14 @@ pro manual_refine_params, data, metadata, pole, zenith, ratio, rotate = rotate
       'l':  ratio-=0.5
       else:
       endcase
-    time = (strsplit(metadata[i].exposure_start_string,":- ",/extract))[0:5]
-    frame=rdata[*,*,i]*(1+pointing_mask([79.35,46.01],[56.35,265.3],time,pole=pole,zenith=zenith,ratio=ratio)$
-      +pointing_mask([88.8,7.41],[56.3,265.3],time,pole=pole,zenith=zenith,ratio=ratio)$
-      +pointing_mask([101.4,-16.72],[56.3,265.3],time,pole=pole,zenith=zenith,ratio=ratio)$
-      +pointing_mask([115,5.2],[56.3,265.3],time,pole=pole,zenith=zenith,ratio=ratio)$
-      +pointing_mask([116.5,28],[56.3,265.3],time,pole=pole,zenith=zenith,ratio=ratio)$
-      +pointing_mask([41.2,89.31],[56.3,265.3],time,pole=pole,zenith=zenith,ratio=ratio))
-    tvscl,rebin(sqrt(frame-min_val),512,512,/sample)
-    endwhile
+    endrep until c eq 'y'
 end
 
-pro get_count, data, metadata, index, object, location, pole, zenith, ratio, result, z_angle = z_angle, refine_dec = dec
+pro get_count, data, metadata, index, object, location, pole, zenith, ratio, result, z_angle = z_angle, refine_dec = dec, visual = visual
   min_val = min(data)
   time = (strsplit(metadata[index].exposure_start_string,":- ",/extract))[0:5]
   tmp = 0d
-  filter1 = pointing_mask(object, location, time, pole = pole, zenith = zenith, ratio = ratio, z_angle = tmp_z)
+  filter1 = pointing_mask(object, location, time, pole = pole, zenith = zenith, ratio = ratio, zen_angle = tmp_z)
   
   if total(filter1) eq 0 then begin & result = 0
   endif else begin
@@ -105,7 +96,7 @@ pro get_count, data, metadata, index, object, location, pole, zenith, ratio, res
     bgfilter = raster_circle(4,coords[0],coords[1], 256,256)
     bg = total(data[*,*,index]*bgfilter)/total(bgfilter)
     result = total((data[*,*,index]-bg)*filter2)>0
-    tvscl,rebin(sqrt((data[*,*,index]-min_val)*(1+filter2)),512,512,/sample)
+    if keyword_set(visual) then tvscl,rebin(sqrt((data[*,*,index]-min_val)*(1+filter2)),512,512,/sample)
   endelse
   if arg_present(z_angle) then z_angle = tmp_z
 end
@@ -130,19 +121,31 @@ pro data_init, data,metadata, day,site
   THEMIS_IMAGER_READFILE,filelist,data,metadata,COUNT=nframes  &  PRINT,nframes
 end
 
+data_init, data, metadata, 31, "gill_themis19"
+location=[56.3,265.3]
+tsize = (size(data))[3]
+rdata = ulonarr(256,256,tsize)
+for i = 0, tsize-1 do rdata[*,*,i] = rotate(data[*,*,i],7)
+;manual_refine_params, rdata, metadata, location, pole, zenith, ratio
+
+
 print, pole, zenith, ratio
 ra = 79.35
 dec = 46.01
-
-tsize = (size(data))[3]
-rdata = ulonarr(256,256,tsize)
+ 
 z_angle = dblarr(tsize)
-for i = 0, tsize-1 do rdata[*,*,i] = rotate(data[*,*,i],7)
 result=ulonarr(tsize)
 for i = 0,tsize-1 do begin
   tmp2 = 0
-  get_count, rdata, metadata, i, [ra, dec], [56.3,265.3], pole,zenith, ratio, tmp, z_angle=z_angle[i]
-  ;z_angle[i] = tmp2
+  get_count, rdata, metadata, i, [ra, dec], location, pole,zenith, ratio, tmp, z_angle=tmp2
+  z_angle[i] = tmp2
   result[i] = tmp
 endfor
+
+;openw, lun1, 'tpas_0131_counts.dat',/get_lun
+;openw, lun2, 'tpas_0131_angle.dat',/get_lun
+;printf, lun1, result
+;printf, lun2, z_angle
+;free_lun,lun1
+;free_lun,lun2
 end
